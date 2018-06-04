@@ -1,0 +1,1 @@
+Error reading 'netplan': error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go struct field .ethernets of type netmangler.Physical

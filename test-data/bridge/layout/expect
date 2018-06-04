@@ -1,0 +1,18 @@
+Child2Parent:
+  enp3s0: br0
+Interfaces:
+  br0:
+    accept-ra: true
+    dhcp4: true
+    hwaddr: ""
+    interfaces:
+    - enp3s0
+    match-id: br0
+    nameservers: {}
+    type: bridge
+  enp3s0:
+    hwaddr: "52:54:01:23:00:03"
+    match-id: enp3s0
+    type: physical
+Roots:
+- br0

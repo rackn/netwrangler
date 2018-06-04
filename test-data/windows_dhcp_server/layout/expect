@@ -1,0 +1,14 @@
+Child2Parent: {}
+Interfaces:
+  enp3s0:
+    accept-ra: true
+    dhcp-identifier: mac
+    dhcp4: true
+    hwaddr: "52:54:01:23:00:03"
+    match-id: enp3s0
+    nameservers: {}
+    parameters:
+      wakeonlan: false
+    type: physical
+Roots:
+- enp3s0

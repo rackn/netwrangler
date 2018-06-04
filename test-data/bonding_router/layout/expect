@@ -1,0 +1,113 @@
+Child2Parent:
+  enp1s0: bond-wan
+  enp2s0: bond-lan
+  enp3s0: bond-lan
+  enp4s0: bond-wan
+  enp5s0: bond-conntrack
+  enp6s0: bond-conntrack
+Interfaces:
+  bond-conntrack:
+    accept-ra: true
+    addresses:
+    - 192.168.254.2/24
+    hwaddr: ""
+    interfaces:
+    - enp5s0
+    - enp6s0
+    match-id: bond-conntrack
+    nameservers: {}
+    parameters:
+      mii-monitor-interval: 1
+      mode: balance-rr
+    type: bond
+  bond-lan:
+    accept-ra: true
+    addresses:
+    - 192.168.93.2/24
+    hwaddr: ""
+    interfaces:
+    - enp2s0
+    - enp3s0
+    match-id: bond-lan
+    nameservers: {}
+    parameters:
+      mii-monitor-interval: 1
+      mode: 802.3ad
+    type: bond
+  bond-wan:
+    accept-ra: true
+    addresses:
+    - 192.168.1.252/24
+    gateway4: 192.168.1.1
+    hwaddr: ""
+    interfaces:
+    - enp1s0
+    - enp4s0
+    match-id: bond-wan
+    nameservers:
+      addresses:
+      - 8.8.8.8
+      - 8.8.4.4
+      search:
+      - local
+    parameters:
+      gratuitious-arp: 5
+      mii-monitor-interval: 1
+      mode: active-backup
+    type: bond
+  enp1s0:
+    accept-ra: true
+    hwaddr: "52:54:01:23:00:01"
+    match-id: enp1s0
+    nameservers: {}
+    parameters:
+      wakeonlan: false
+    type: physical
+  enp2s0:
+    accept-ra: true
+    hwaddr: "52:54:01:23:00:02"
+    match-id: enp2s0
+    nameservers: {}
+    parameters:
+      wakeonlan: false
+    type: physical
+  enp3s0:
+    accept-ra: true
+    hwaddr: "52:54:01:23:00:03"
+    match-id: enp3s0
+    nameservers: {}
+    optional: true
+    parameters:
+      wakeonlan: false
+    type: physical
+  enp4s0:
+    accept-ra: true
+    hwaddr: "52:54:01:23:00:04"
+    match-id: enp4s0
+    nameservers: {}
+    optional: true
+    parameters:
+      wakeonlan: false
+    type: physical
+  enp5s0:
+    accept-ra: true
+    hwaddr: "52:54:01:23:00:05"
+    match-id: enp5s0
+    nameservers: {}
+    optional: true
+    parameters:
+      wakeonlan: false
+    type: physical
+  enp6s0:
+    accept-ra: true
+    hwaddr: "52:54:01:23:00:06"
+    match-id: enp6s0
+    nameservers: {}
+    optional: true
+    parameters:
+      wakeonlan: false
+    type: physical
+Roots:
+- bond-conntrack
+- bond-lan
+- bond-wan

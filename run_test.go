@@ -64,6 +64,14 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 	} else {
 		phys = testPhys
 	}
+	if wantErr {
+		if f, e := os.Create("wantErr"); e == nil {
+			f.Close()
+		}
+	} else {
+		os.RemoveAll("wantErr")
+	}
+	os.RemoveAll("untouched")
 	claimedPhys = map[string]Interface{}
 	actualOut := path.Join(out, "actual")
 	expectOut := path.Join(out, "expect")
