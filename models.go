@@ -129,22 +129,26 @@ func validateBool(e *err, k string, v interface{}) (res, valid bool) {
 
 func validateInt(e *err, k string, v interface{}, min, max, def int) (res int, valid bool) {
 	val := def
-	switch v.(type) {
+	switch vv := v.(type) {
+	case int:
+		val = vv
+	case uint:
+		val = int(vv)
 	case int64:
-		val = int(v.(int64))
+		val = int(vv)
 	case uint64:
-		val = int(v.(uint64))
+		val = int(vv)
 	case float64:
-		val = int(v.(float64))
+		val = int(vv)
 	case string:
-		vv, err := strconv.ParseInt(v.(string), 0, 64)
+		vvs, err := strconv.ParseInt(vv, 0, 64)
 		if err != nil {
 			e.Errorf("%s: Cannot cast %v to an int: %v", k, v, err)
 			return -1, false
 		}
-		val = int(vv)
+		val = int(vvs)
 	default:
-		e.Errorf("%s: Cannot cast %T to an int: %v", k, v, v)
+		e.Errorf("%s: Cannot cast %T(%v) to an %T(%v)", k, v, v, vv, vv)
 		return -1, false
 	}
 	if val == def {
@@ -293,12 +297,18 @@ type Interface struct {
 	*Network
 	Type       string                 `json:"type"`
 	MatchID    string                 `json:"match-id"`
-	HwAddr     HardwareAddr           `json:"macaddress"`
+	HwAddr     HardwareAddr           `json:"hwaddr"`
 	Interfaces []string               `json:"interfaces,omitempty"`
 	Parameters map[string]interface{} `json:"parameters,omitempty"`
 }
 
 func (i *Interface) Validate() error {
+	if i.Interfaces == nil {
+		i.Interfaces = []string{}
+	}
+	if i.Parameters == nil {
+		i.Parameters = map[string]interface{}{}
+	}
 	if i.Network != nil {
 		return i.Network.Validate()
 	}
@@ -315,18 +325,8 @@ type Physical struct {
 	WakeOnLan bool `json:"wakeonlan,omitempty"`
 }
 
-func (pi *Physical) MatchEmpty() bool {
-	return pi.Match.Name == "" &&
-		pi.Match.Driver == "" &&
-		(pi.Match.MacAddress == nil || len(pi.Match.MacAddress) == 0)
-}
-
-func (pi *Physical) Validate() error {
-	pi.Type = "physical"
-	e := &err{prefix: pi.Type + ":" + pi.MatchID}
-	pi.Parameters["wakeonlan"] = pi.WakeOnLan
-	e.Merge(pi.Interface.Validate())
-	pi.Interfaces = []string{}
+func (pi *Physical) Phys(e *err) map[string]Interface {
+	res := map[string]Interface{}
 	for _, intf := range phys {
 		nre := g2re(pi.Match.Name)
 		if !(nre.MatchString(intf.Name) || nre.MatchString(intf.StableName)) {
@@ -346,19 +346,41 @@ func (pi *Physical) Validate() error {
 			e.Errorf("Physical link %s wants physical interface %s, but so does %s", pi.MatchID, intf.Name, other.MatchID)
 			continue
 		}
-		pi.Interfaces = append(pi.Interfaces, intf.Name)
-		claimedPhys[intf.Name] = pi.Interface
+		ni := pi.Interface
+		ni.HwAddr = intf.HwAddr
+		ni.Interfaces = nil
+		res[intf.Name] = ni
 	}
-	log.Printf("%s: subs %v", pi.MatchID, pi.Interfaces)
-	switch len(pi.Interfaces) {
+	return res
+}
+
+func (pi *Physical) MatchEmpty() bool {
+	return pi.Match.Name == "" &&
+		pi.Match.Driver == "" &&
+		(pi.Match.MacAddress == nil || len(pi.Match.MacAddress) == 0)
+}
+
+func (pi *Physical) Validate() error {
+	pi.Type = "physical"
+	e := &err{prefix: pi.Type + ":" + pi.MatchID}
+	e.Merge(pi.Interface.Validate())
+	pi.Parameters["wakeonlan"] = pi.WakeOnLan
+	pf := pi.Phys(e)
+	switch len(pf) {
 	case 0:
 		e.Errorf("Ethernet network %s does not match any physical interfaces!", pi.MatchID)
+		return e
 	case 1:
 	default:
 		if pi.Configure() && !pi.SetupDHCPOnly() {
 			e.Errorf("Network matches multiple devices %v, cannot configure them all with static networking!", pi.Interfaces)
+			return e
 		}
 	}
+	for k := range pf {
+		pi.Interfaces = append(pi.Interfaces, k)
+	}
+	sort.Strings(pi.Interfaces)
 	return e.OrNil()
 }
 
@@ -487,14 +509,14 @@ func (v *Vlan) Validate() error {
 	e.Merge(v.Interface.Validate())
 	validateInt(e, "id", v.ID, 0, 4094, 0)
 	v.Parameters["id"] = v.ID
-	v.Interfaces = []string{v.Link}
+
+	log.Printf("vlan %s: %v", v.MatchID, v.Interfaces)
 	return e.OrNil()
 }
 
 type Netplan struct {
 	Network struct {
 		Version   int64               `json:"version"`
-		Renderer  string              `json:"renderer"`
 		Ethernets map[string]Physical `json:"ethernets"`
 		Bridges   map[string]Bridge   `json:"bridges"`
 		Bonds     map[string]Bond     `json:"bonds"`
@@ -503,7 +525,6 @@ type Netplan struct {
 }
 
 func (n *Netplan) Read(src string) (*Layout, error) {
-	log.Printf("Reading netplan from %s", src)
 	in := os.Stdin
 	if src != "" {
 		i, e := os.Open(src)
@@ -524,7 +545,6 @@ func (n *Netplan) Read(src string) (*Layout, error) {
 }
 
 type Layout struct {
-	Renderer     string
 	Interfaces   map[string]Interface
 	Child2Parent map[string]string
 	Roots        []string
@@ -537,7 +557,6 @@ func (l *Layout) Interface(name string) (res Interface, found bool) {
 	}
 	for _, phy := range phys {
 		if name == phy.Name || name == phy.StableName {
-			log.Printf("Adding unspecified phy %s", name)
 			l.Interfaces[name] = Interface{
 				MatchID:    phy.Name,
 				Type:       "physical",
@@ -549,7 +568,6 @@ func (l *Layout) Interface(name string) (res Interface, found bool) {
 			break
 		}
 	}
-	log.Printf("No matching interface to be auto-added for %s", name)
 	return
 }
 
@@ -578,6 +596,7 @@ func (l *Layout) Write(dest string) error {
 			return e
 		}
 		defer o.Close()
+		out = o
 	}
 	buf, err := yaml.Marshal(l)
 	if err != nil {
@@ -588,7 +607,6 @@ func (l *Layout) Write(dest string) error {
 }
 
 func (l *Layout) Validate() error {
-	log.Printf("Validating layout")
 	e := &err{prefix: "layout"}
 	l.Roots = []string{}
 	members := []string{}
@@ -597,7 +615,6 @@ func (l *Layout) Validate() error {
 	}
 	for _, k := range members {
 		v, _ := l.Interface(k)
-		log.Printf("Examining interface %s:%v", k, v)
 		switch v.Type {
 		case "physical":
 			if len(v.HwAddr) == 0 {
@@ -639,7 +656,7 @@ func (l *Layout) Validate() error {
 				intf, ok := l.Interface(sub)
 				if !ok {
 					e.Errorf("%s:%s refers to unspecified network interface %s", v.Type, k, sub)
-				} else if p, ok := l.Child2Parent[sub]; !ok && l.Interfaces[p].Type != "vlan" {
+				} else if p, ok := l.Child2Parent[sub]; ok && l.Interfaces[p].Type != "vlan" {
 					e.Errorf("Vlan %s parent interface %s already a member of %s:%s", k, sub, l.Interfaces[p].Type, p)
 				} else if intf.Type == "vlan" {
 					e.Errorf("Vlan %s parent interface %s cannot also be a vlan!", k, sub)
@@ -665,12 +682,14 @@ func (l *Layout) Validate() error {
 				break
 			}
 			working = append(working, next)
-			if next, cycle = l.Child2Parent[next]; cycle {
-				for _, i := range working {
-					cycle = i == next
-					if cycle {
-						break
-					}
+			next, cycle = l.Child2Parent[next]
+			if !cycle {
+				break
+			}
+			for _, i := range working {
+				cycle = i == next
+				if cycle {
+					break
 				}
 			}
 			if cycle {
@@ -695,16 +714,12 @@ func (l *Layout) Validate() error {
 }
 
 func (n *Netplan) Compile() (*Layout, error) {
-	log.Printf("Compiling netplan to layout")
 	e := &err{prefix: "netplan"}
 	l := &Layout{
-		Renderer:     n.Network.Renderer,
 		Interfaces:   map[string]Interface{},
 		Child2Parent: map[string]string{},
 	}
-	log.Printf("Performing basic validation")
 	validateInt(e, "version", n.Network.Version, 2, 2, 0)
-	validateStrIn(e, "renderer", n.Network.Renderer, "networkd", "")
 	if !e.Empty() {
 		return nil, e
 	}
@@ -727,7 +742,9 @@ func (n *Netplan) Compile() (*Layout, error) {
 		if other, ok := l.Interfaces[k]; ok {
 			e.Errorf("Duplicate network definition! %s also defined in %s", k, other.Type)
 		} else {
-			log.Printf("Recording interface %s:%v", k, intf)
+			if intf.MatchID == "" {
+				intf.MatchID = k
+			}
 			l.Interfaces[k] = intf
 		}
 	}
@@ -752,11 +769,9 @@ func (n *Netplan) Compile() (*Layout, error) {
 		v.MatchID = k
 		e.Merge(v.Validate())
 		matchChildren[k] = v.Interfaces
-		for _, n := range v.Interfaces {
-			intf := v.Interface
-			intf.Interfaces = []string{}
-			intf.MatchID = n
-			addOther(k, intf)
+		myPhys := v.Phys(e)
+		for k2, v2 := range myPhys {
+			addOther(k2, v2)
 		}
 	}
 	if !e.Empty() {
@@ -776,7 +791,7 @@ func (n *Netplan) Compile() (*Layout, error) {
 	}
 	for k, v := range n.Network.Vlans {
 		v.Type = "vlan"
-		v.Interfaces = realSubs(v.Interfaces)
+		v.Interfaces = realSubs([]string{v.Link})
 		addOther(k, v.Interface)
 		e.Merge(v.Validate())
 	}

@@ -34,40 +34,31 @@ var testPhys = []Phy{
 }
 
 func diff(expect, actual string) (string, error) {
-	_, err := os.Stat(expect)
-	if err != nil {
-		return "", err
-	}
-	_, err = os.Stat(actual)
-	if err != nil {
-		return "", err
-	}
-	cmd := exec.Command("diff", "-Nur", expect, actual)
+	cmd := exec.Command("diff", "-Ndur", expect, actual)
 	res, err := cmd.CombinedOutput()
 	return string(res), err
 }
 
 func cmpOut(t *testing.T, actual, expect string) {
 	out, err := diff(expect, actual)
-	if err != nil {
-		t.Errorf("ERROR: running diff: %v", err)
-	}
 	if out != "" {
 		t.Errorf("ERROR: %s: diff from expected %s:\n%s", actual, expect, out)
+	} else if err != nil {
+		t.Errorf("ERROR: running diff: %v", err)
 	} else {
 		t.Logf("%s: No diff from expected: %s", actual, expect)
 	}
 }
 
 func testRun(t *testing.T, loc, in, out string, wantErr bool) {
-	t.Helper()
+	//t.Helper()
 	pwd, _ := os.Getwd()
 	if err := os.Chdir(loc); err != nil {
 		t.Errorf("Failed to change dir to %s: %v", loc, err)
 		return
 	}
 	defer os.Chdir(pwd)
-	args := []string{}
+	args := []string{"test"}
 	if st, ok := os.Stat("phys.yaml"); ok == nil && st.Mode().IsRegular() {
 		args = append(args, "-phys", path.Join(loc, "phys.yaml"))
 	} else {
@@ -82,11 +73,12 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 	os.RemoveAll(actualErr)
 	os.MkdirAll(out, 0755)
 	args = append(args,
+		"-op", "compile",
 		"-in", in,
 		"-src", in+".yaml",
 		"-out", out,
-		"-dest", path.Join("actual", out),
-		"-op", "compile")
+		"-dest", actualOut)
+	t.Logf("Running with args %v", args)
 	if err := Run(args...); err != nil {
 		if !wantErr {
 			t.Errorf("ERROR: loc %s: Unexpected error!\n%v", loc, err)

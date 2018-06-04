@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	yaml "github.com/ghodss/yaml"
@@ -18,40 +17,32 @@ type Phy struct {
 var (
 	phys        []Phy
 	claimedPhys map[string]Interface
-	op          string
-	inFmt       string
-	outFmt      string
-	src         string
-	dest        string
-	physIn      string
 )
 
-func parseArgs(args ...string) error {
-	flag.StringVar(&op, "op", "",
+func Run(args ...string) error {
+	op, inFmt, outFmt, src, dest, physIn := "", "", "", "", "", ""
+	if len(args) == 0 {
+		args = os.Args[:]
+	}
+	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	fs.StringVar(&op, "op", "",
 		`Operation to perform.
 "gather" gathers information about the physical nics on the system in a form that can be used later with the -phys option
 "compile" translates the -in formatted network spec from -src to -out formatted data at -dest`)
-	flag.StringVar(&inFmt, "in", "", "Format to expect for input.  `netplan` is the only option for now.")
-	flag.StringVar(&outFmt, "out", "layout", "Format to render input to.  `layout` is the only option for now.")
-	flag.StringVar(&src, "src", "", "Location to get input from.  Defaults to stdin.")
-	flag.StringVar(&dest, "dest", "", "Location to write output to.  Defaults to stdout.")
-	flag.StringVar(&physIn, "phys", "", "File to read to gather current physical nics.  Defaults to reading them from the kernel.")
-	if len(args) > 0 {
-		flag.CommandLine = flag.NewFlagSet("testing", flag.ContinueOnError)
-		if err := flag.CommandLine.Parse(args); err != nil {
-			return err
-		}
-	} else {
-		flag.Parse()
+	fs.StringVar(&inFmt, "in", "", "Format to expect for input.  `netplan` is the only option for now.")
+	fs.StringVar(&outFmt, "out", "layout", "Format to render input to.  `layout` is the only option for now.")
+	fs.StringVar(&src, "src", "", "Location to get input from.  Defaults to stdin.")
+	fs.StringVar(&dest, "dest", "", "Location to write output to.  Defaults to stdout.")
+	fs.StringVar(&physIn, "phys", "", "File to read to gather current physical nics.  Defaults to reading them from the kernel.")
+	if err := fs.Parse(args[1:]); err != nil {
+		return err
 	}
-	return nil
-}
-
-func run() error {
 	var netErr error
 	claimedPhys = map[string]Interface{}
-	if physIn == "" && phys == nil {
-		phys, netErr = gatherPhys()
+	if physIn == "" {
+		if phys == nil {
+			phys, netErr = gatherPhys()
+		}
 	} else {
 		buf, err := ioutil.ReadFile(physIn)
 		if err != nil {
@@ -84,7 +75,6 @@ func run() error {
 	case "compile":
 		var layout *Layout
 		var err error
-		log.Printf("Compiling %s from %s", inFmt, src)
 		switch inFmt {
 		case "netplan":
 			np := &Netplan{}
@@ -97,7 +87,6 @@ func run() error {
 		if err != nil {
 			return fmt.Errorf("Error reading '%s': %v", inFmt, err)
 		}
-		log.Printf("Writing layout to %s:%s", outFmt, dest)
 		switch outFmt {
 		case "layout":
 			err = layout.Write(dest)
@@ -111,11 +100,4 @@ func run() error {
 		return fmt.Errorf("Unknown op `%s`.  Only `gather` and `compile` are supported", op)
 	}
 	return nil
-}
-
-func Run(args ...string) error {
-	if err := parseArgs(args...); err != nil {
-		return err
-	}
-	return run()
 }
