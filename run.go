@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	yaml "github.com/ghodss/yaml"
@@ -25,7 +26,7 @@ var (
 	physIn      string
 )
 
-func Run(args ...string) error {
+func parseArgs(args ...string) error {
 	flag.StringVar(&op, "op", "",
 		`Operation to perform.
 "gather" gathers information about the physical nics on the system in a form that can be used later with the -phys option
@@ -43,9 +44,13 @@ func Run(args ...string) error {
 	} else {
 		flag.Parse()
 	}
+	return nil
+}
+
+func run() error {
 	var netErr error
 	claimedPhys = map[string]Interface{}
-	if physIn == "" {
+	if physIn == "" && phys == nil {
 		phys, netErr = gatherPhys()
 	} else {
 		buf, err := ioutil.ReadFile(physIn)
@@ -79,6 +84,7 @@ func Run(args ...string) error {
 	case "compile":
 		var layout *Layout
 		var err error
+		log.Printf("Compiling %s from %s", inFmt, src)
 		switch inFmt {
 		case "netplan":
 			np := &Netplan{}
@@ -91,6 +97,7 @@ func Run(args ...string) error {
 		if err != nil {
 			return fmt.Errorf("Error reading '%s': %v", inFmt, err)
 		}
+		log.Printf("Writing layout to %s:%s", outFmt, dest)
 		switch outFmt {
 		case "layout":
 			err = layout.Write(dest)
@@ -104,4 +111,11 @@ func Run(args ...string) error {
 		return fmt.Errorf("Unknown op `%s`.  Only `gather` and `compile` are supported", op)
 	}
 	return nil
+}
+
+func Run(args ...string) error {
+	if err := parseArgs(args...); err != nil {
+		return err
+	}
+	return run()
 }

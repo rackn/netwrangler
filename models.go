@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math"
 	"net"
 	"os"
@@ -48,6 +49,12 @@ func (e *err) Empty() bool {
 }
 
 func (e *err) Merge(other error) {
+	if other == nil {
+		return
+	}
+	if e.msgs == nil {
+		e.msgs = []string{}
+	}
 	if o, ok := other.(*err); ok {
 		for _, msg := range o.msgs {
 			e.Errorf("%s: %s", o.prefix, msg)
@@ -124,11 +131,11 @@ func validateInt(e *err, k string, v interface{}, min, max, def int) (res int, v
 	val := def
 	switch v.(type) {
 	case int64:
-		val = v.(int)
+		val = int(v.(int64))
 	case uint64:
-		val = v.(int)
+		val = int(v.(uint64))
 	case float64:
-		val = v.(int)
+		val = int(v.(float64))
 	case string:
 		vv, err := strconv.ParseInt(v.(string), 0, 64)
 		if err != nil {
@@ -195,10 +202,10 @@ type Route struct {
 	To     *IP    `json:"to"`
 	Via    *IP    `json:"via"`
 	OnLink bool   `json:"on-link"`
-	Metric uint   `json:"metric"`
+	Metric uint64 `json:"metric"`
 	Type   string `json:"type"`
 	Scope  string `json:"scope"`
-	Table  uint   `json:"table"`
+	Table  uint64 `json:"table"`
 }
 
 func (r *Route) Validate() error {
@@ -206,12 +213,12 @@ func (r *Route) Validate() error {
 }
 
 type RoutePolicy struct {
-	From     *IP  `json:"from"`
-	To       *IP  `json:"to"`
-	Table    uint `json:"table"`
-	Priority uint `json:"priority"`
-	FWMark   uint `json:"fwmark"`
-	TOS      int  `json:"type-of-service"`
+	From     *IP    `json:"from"`
+	To       *IP    `json:"to"`
+	Table    uint64 `json:"table"`
+	Priority uint64 `json:"priority"`
+	FWMark   uint64 `json:"fwmark"`
+	TOS      int64  `json:"type-of-service"`
 }
 
 func (r *RoutePolicy) Validate() error {
@@ -342,6 +349,7 @@ func (pi *Physical) Validate() error {
 		pi.Interfaces = append(pi.Interfaces, intf.Name)
 		claimedPhys[intf.Name] = pi.Interface
 	}
+	log.Printf("%s: subs %v", pi.MatchID, pi.Interfaces)
 	switch len(pi.Interfaces) {
 	case 0:
 		e.Errorf("Ethernet network %s does not match any physical interfaces!", pi.MatchID)
@@ -484,15 +492,18 @@ func (v *Vlan) Validate() error {
 }
 
 type Netplan struct {
-	Version   int                 `json:"version"`
-	Renderer  string              `json:"renderer"`
-	Ethernets map[string]Physical `json:"ethernets"`
-	Bridges   map[string]Bridge   `json:"bridges"`
-	Bonds     map[string]Bond     `json:"bonds"`
-	Vlans     map[string]Vlan     `json:"vlans"`
+	Network struct {
+		Version   int64               `json:"version"`
+		Renderer  string              `json:"renderer"`
+		Ethernets map[string]Physical `json:"ethernets"`
+		Bridges   map[string]Bridge   `json:"bridges"`
+		Bonds     map[string]Bond     `json:"bonds"`
+		Vlans     map[string]Vlan     `json:"vlans"`
+	} `json:"network"`
 }
 
 func (n *Netplan) Read(src string) (*Layout, error) {
+	log.Printf("Reading netplan from %s", src)
 	in := os.Stdin
 	if src != "" {
 		i, e := os.Open(src)
@@ -517,6 +528,29 @@ type Layout struct {
 	Interfaces   map[string]Interface
 	Child2Parent map[string]string
 	Roots        []string
+}
+
+func (l *Layout) Interface(name string) (res Interface, found bool) {
+	res, found = l.Interfaces[name]
+	if found {
+		return
+	}
+	for _, phy := range phys {
+		if name == phy.Name || name == phy.StableName {
+			log.Printf("Adding unspecified phy %s", name)
+			l.Interfaces[name] = Interface{
+				MatchID:    phy.Name,
+				Type:       "physical",
+				HwAddr:     phy.HwAddr,
+				Parameters: map[string]interface{}{},
+			}
+			claimedPhys[name] = l.Interfaces[name]
+			res, found = l.Interfaces[name]
+			break
+		}
+	}
+	log.Printf("No matching interface to be auto-added for %s", name)
+	return
 }
 
 func (l *Layout) Read(src string) (*Layout, error) {
@@ -554,12 +588,16 @@ func (l *Layout) Write(dest string) error {
 }
 
 func (l *Layout) Validate() error {
+	log.Printf("Validating layout")
 	e := &err{prefix: "layout"}
 	l.Roots = []string{}
-	// Basic sanity checking for bridge management
-	// No special restrictions on what can be a member of a bridge,
-	// aside from the exclusive member restriction.
-	for k, v := range l.Interfaces {
+	members := []string{}
+	for k := range l.Interfaces {
+		members = append(members, k)
+	}
+	for _, k := range members {
+		v, _ := l.Interface(k)
+		log.Printf("Examining interface %s:%v", k, v)
 		switch v.Type {
 		case "physical":
 			if len(v.HwAddr) == 0 {
@@ -570,7 +608,7 @@ func (l *Layout) Validate() error {
 			}
 		case "bridge", "bond":
 			for _, sub := range v.Interfaces {
-				intf, ok := l.Interfaces[sub]
+				intf, ok := l.Interface(sub)
 				if !ok {
 					e.Errorf("%s:%s refers to unspecified network interface %s", v.Type, k, sub)
 					continue
@@ -598,7 +636,7 @@ func (l *Layout) Validate() error {
 				e.Errorf("Vlan %s must refer to exactly one other interface, not %d", k, len(v.Interfaces))
 			} else {
 				sub := v.Interfaces[0]
-				intf, ok := l.Interfaces[sub]
+				intf, ok := l.Interface(sub)
 				if !ok {
 					e.Errorf("%s:%s refers to unspecified network interface %s", v.Type, k, sub)
 				} else if p, ok := l.Child2Parent[sub]; !ok && l.Interfaces[p].Type != "vlan" {
@@ -612,6 +650,9 @@ func (l *Layout) Validate() error {
 		default:
 			e.Errorf("Cannot handle interface %s:%s", v.Type, k)
 		}
+	}
+	if !e.Empty() {
+		return e
 	}
 	cleanInterfaces := map[string]struct{}{}
 	cyclic := func(intf string) {
@@ -654,36 +695,39 @@ func (l *Layout) Validate() error {
 }
 
 func (n *Netplan) Compile() (*Layout, error) {
+	log.Printf("Compiling netplan to layout")
 	e := &err{prefix: "netplan"}
 	l := &Layout{
-		Renderer:     n.Renderer,
+		Renderer:     n.Network.Renderer,
 		Interfaces:   map[string]Interface{},
 		Child2Parent: map[string]string{},
 	}
-	validateInt(e, "version", n.Version, 2, 2, 0)
-	validateStrIn(e, "renderer", n.Renderer, "systemd", "")
+	log.Printf("Performing basic validation")
+	validateInt(e, "version", n.Network.Version, 2, 2, 0)
+	validateStrIn(e, "renderer", n.Network.Renderer, "networkd", "")
 	if !e.Empty() {
 		return nil, e
 	}
 	l.Interfaces = map[string]Interface{}
 	// Make sure we always have something to operate on
-	if n.Ethernets == nil {
-		n.Ethernets = map[string]Physical{}
+	if n.Network.Ethernets == nil {
+		n.Network.Ethernets = map[string]Physical{}
 	}
-	if n.Bridges == nil {
-		n.Bridges = map[string]Bridge{}
+	if n.Network.Bridges == nil {
+		n.Network.Bridges = map[string]Bridge{}
 	}
-	if n.Bonds == nil {
-		n.Bonds = map[string]Bond{}
+	if n.Network.Bonds == nil {
+		n.Network.Bonds = map[string]Bond{}
 	}
-	if n.Vlans == nil {
-		n.Vlans = map[string]Vlan{}
+	if n.Network.Vlans == nil {
+		n.Network.Vlans = map[string]Vlan{}
 	}
 	// Keep track of all known tags
 	addOther := func(k string, intf Interface) {
 		if other, ok := l.Interfaces[k]; ok {
 			e.Errorf("Duplicate network definition! %s also defined in %s", k, other.Type)
 		} else {
+			log.Printf("Recording interface %s:%v", k, intf)
 			l.Interfaces[k] = intf
 		}
 	}
@@ -700,7 +744,8 @@ func (n *Netplan) Compile() (*Layout, error) {
 		sort.Strings(res)
 		return res
 	}
-	for k, v := range n.Ethernets {
+	for k, v := range n.Network.Ethernets {
+		v.Type = "physical"
 		if v.MatchEmpty() {
 			v.Match.Name = k
 		}
@@ -717,17 +762,20 @@ func (n *Netplan) Compile() (*Layout, error) {
 	if !e.Empty() {
 		return nil, e
 	}
-	for k, v := range n.Bridges {
+	for k, v := range n.Network.Bridges {
+		v.Type = "bridge"
 		v.Interfaces = realSubs(v.Interfaces)
 		addOther(k, v.Interface)
 		e.Merge(v.Validate())
 	}
-	for k, v := range n.Bonds {
+	for k, v := range n.Network.Bonds {
+		v.Type = "bond"
 		v.Interfaces = realSubs(v.Interfaces)
 		addOther(k, v.Interface)
 		e.Merge(v.Validate())
 	}
-	for k, v := range n.Vlans {
+	for k, v := range n.Network.Vlans {
+		v.Type = "vlan"
 		v.Interfaces = realSubs(v.Interfaces)
 		addOther(k, v.Interface)
 		e.Merge(v.Validate())
