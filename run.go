@@ -9,11 +9,6 @@ import (
 	yaml "github.com/ghodss/yaml"
 )
 
-type Phy struct {
-	Name, StableName, Driver string
-	HwAddr                   HardwareAddr
-}
-
 var (
 	phys        []Phy
 	claimedPhys map[string]Interface

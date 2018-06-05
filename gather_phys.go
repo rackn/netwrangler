@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+type Phy struct {
+	Name, StableName, Driver string
+	HwAddr                   HardwareAddr
+}
+
 func gatherPhys() ([]Phy, error) {
 	baseifs, err := net.Interfaces()
 	if err != nil {

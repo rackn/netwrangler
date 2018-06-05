@@ -102,13 +102,17 @@ func (h HardwareAddr) MarshalText() ([]byte, error) {
 	return []byte(net.HardwareAddr(h).String()), nil
 }
 
-func (h HardwareAddr) UnmarshalText(buf []byte) error {
+func (h *HardwareAddr) UnmarshalText(buf []byte) error {
 	mac, err := net.ParseMAC(string(buf))
 	if err != nil {
 		return err
 	}
-	copy(h, mac)
+	*h = HardwareAddr(mac)
 	return nil
+}
+
+func (h HardwareAddr) String() string {
+	return net.HardwareAddr(h).String()
 }
 
 func validateBool(e *err, k string, v interface{}) (res, valid bool) {
@@ -321,21 +325,27 @@ type Physical struct {
 		Name       string       `json:"name,omitempty"`
 		MacAddress HardwareAddr `json:"macaddress,omitempty"`
 		Driver     string       `json:"driver,omitempty"`
-	}
+	} `json:"match,omitempty"`
 	WakeOnLan bool `json:"wakeonlan,omitempty"`
 }
 
 func (pi *Physical) Phys(e *err) map[string]Interface {
 	res := map[string]Interface{}
+	if pi.MatchID == "mainif" {
+		log.Printf("Matching %s: %#v", pi.MatchID, pi.Match)
+	}
 	for _, intf := range phys {
-		nre := g2re(pi.Match.Name)
-		if !(nre.MatchString(intf.Name) || nre.MatchString(intf.StableName)) {
-			continue
+		if pi.MatchID == "mainif" {
+			log.Printf("Trying %#v", intf)
 		}
-		if !(pi.Match.MacAddress == nil || len(pi.Match.MacAddress) == 0) {
-			if !bytes.Equal(pi.Match.MacAddress, intf.HwAddr) {
+		if pi.Match.Name != "" {
+			nre := g2re(pi.Match.Name)
+			if !(nre.MatchString(intf.Name) || nre.MatchString(intf.StableName)) {
 				continue
 			}
+		}
+		if len(pi.Match.MacAddress) > 0 && !bytes.Equal(pi.Match.MacAddress, intf.HwAddr) {
+			continue
 		}
 		if pi.Match.Driver != "" && pi.Match.Driver != intf.Driver {
 			continue
@@ -357,7 +367,7 @@ func (pi *Physical) Phys(e *err) map[string]Interface {
 func (pi *Physical) MatchEmpty() bool {
 	return pi.Match.Name == "" &&
 		pi.Match.Driver == "" &&
-		(pi.Match.MacAddress == nil || len(pi.Match.MacAddress) == 0)
+		len(pi.Match.MacAddress) == 0
 }
 
 func (pi *Physical) Validate() error {
@@ -366,6 +376,9 @@ func (pi *Physical) Validate() error {
 	e.Merge(pi.Interface.Validate())
 	pi.Parameters["wakeonlan"] = pi.WakeOnLan
 	pf := pi.Phys(e)
+	if pi.MatchID == "mainif" {
+		log.Printf("mainif: %#v", pi)
+	}
 	switch len(pf) {
 	case 0:
 		e.Errorf("Ethernet network %s does not match any physical interfaces!", pi.MatchID)
@@ -514,6 +527,18 @@ func (v *Vlan) Validate() error {
 	return e.OrNil()
 }
 
+type Wifi struct {
+	Interface
+	AccessPoints map[string]struct {
+		Password string `json:"password"`
+		Mode     string `json:"mode"`
+	} `json:"access-points"`
+}
+
+func (w *Wifi) Validate() error {
+	return fmt.Errorf("Wifi not supported")
+}
+
 type Netplan struct {
 	Network struct {
 		Version   int64               `json:"version"`
@@ -521,6 +546,7 @@ type Netplan struct {
 		Bridges   map[string]Bridge   `json:"bridges"`
 		Bonds     map[string]Bond     `json:"bonds"`
 		Vlans     map[string]Vlan     `json:"vlans"`
+		Wifis     map[string]Wifi     `json:"wifis"`
 	} `json:"network"`
 }
 
@@ -541,6 +567,11 @@ func (n *Netplan) Read(src string) (*Layout, error) {
 	if err := yaml.Unmarshal(buf, n); err != nil {
 		return nil, err
 	}
+	buf, err = yaml.Marshal(n)
+	if err != nil {
+		log.Printf("Error marshalling netplan: %v", err)
+	}
+	os.Stderr.Write(buf)
 	return n.Compile()
 }
 
@@ -737,6 +768,9 @@ func (n *Netplan) Compile() (*Layout, error) {
 	if n.Network.Vlans == nil {
 		n.Network.Vlans = map[string]Vlan{}
 	}
+	if n.Network.Wifis == nil {
+		n.Network.Wifis = map[string]Wifi{}
+	}
 	// Keep track of all known tags
 	addOther := func(k string, intf Interface) {
 		if other, ok := l.Interfaces[k]; ok {
@@ -792,6 +826,12 @@ func (n *Netplan) Compile() (*Layout, error) {
 	for k, v := range n.Network.Vlans {
 		v.Type = "vlan"
 		v.Interfaces = realSubs([]string{v.Link})
+		addOther(k, v.Interface)
+		e.Merge(v.Validate())
+	}
+	for k, v := range n.Network.Wifis {
+		v.Type = "wifi"
+		v.Interfaces = realSubs(v.Interfaces)
 		addOther(k, v.Interface)
 		e.Merge(v.Validate())
 	}

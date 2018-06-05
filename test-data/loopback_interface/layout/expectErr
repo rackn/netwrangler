@@ -1,0 +1,3 @@
+Error reading 'netplan': netplan:
+physical:lo: Ethernet network lo does not match any physical interfaces!
+

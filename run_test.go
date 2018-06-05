@@ -8,8 +8,11 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"testing"
+
+	yaml "github.com/ghodss/yaml"
 )
 
 func m(s string) HardwareAddr {
@@ -21,6 +24,7 @@ func m(s string) HardwareAddr {
 }
 
 var testPhys = []Phy{
+	{Name: "enp9s5", Driver: "foobar2000", HwAddr: m("de:ad:be:ef:ca:fe")},
 	{Name: "enp0s25", Driver: "broadcom", HwAddr: m("52:54:01:23:00:00")},
 	{Name: "enp1s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:01")},
 	{Name: "enp2s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:02")},
@@ -109,6 +113,26 @@ func rt(t *testing.T, loc string, wantErr bool) {
 	}
 }
 
+func TestPhys(t *testing.T) {
+	buf, err := yaml.Marshal(testPhys)
+	if err != nil {
+		t.Errorf("Error marshalling phys: %v", err)
+		return
+	} else {
+		t.Logf("orig: %s", string(buf))
+	}
+	np := []Phy{}
+	if err := yaml.Unmarshal(buf, &np); err != nil {
+		t.Errorf("Error unmarshalling phys: %v", err)
+		return
+	} else if !reflect.DeepEqual(testPhys, np) {
+		t.Errorf("Unmarshalled phys not equal to phys: %v", err)
+		b2, _ := yaml.Marshal(np)
+
+		t.Errorf("new: %s", string(b2))
+	}
+}
+
 func TestNetMangler(t *testing.T) {
 	tests, err := filepath.Glob(path.Join("test-data", "*"))
 	if err != nil {
@@ -118,6 +142,7 @@ func TestNetMangler(t *testing.T) {
 	sort.Strings(tests)
 	fails := map[string]bool{
 		"test-data/direct_connect_gateway": true,
+		"test-data/loopback_interface":     true,
 		"test-data/wireless":               true,
 	}
 	for _, testPath := range tests {
