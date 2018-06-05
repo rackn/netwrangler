@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math"
 	"net"
 	"os"
@@ -206,31 +205,60 @@ func validateIPList(e *err, k string, v interface{}, cidr bool) (res []*IP, vali
 }
 
 type Route struct {
-	From   *IP    `json:"from"`
-	To     *IP    `json:"to"`
-	Via    *IP    `json:"via"`
-	OnLink bool   `json:"on-link"`
-	Metric uint64 `json:"metric"`
-	Type   string `json:"type"`
-	Scope  string `json:"scope"`
-	Table  uint64 `json:"table"`
+	From   *IP    `json:"from,omitempty"`
+	To     *IP    `json:"to,omitempty"`
+	Via    *IP    `json:"via,omitempty"`
+	OnLink bool   `json:"on-link,omitempty"`
+	Metric int    `json:"metric,omitempty"`
+	Type   string `json:"type,omitempty"`
+	Scope  string `json:"scope,omitempty"`
+	Table  int    `json:"table,omitempty"`
 }
 
 func (r *Route) Validate() error {
-	return fmt.Errorf("Route Not Implemented")
+	e := &err{prefix: "Route"}
+	validateStrIn(e, "scope", r.Scope, "global", "link", "host", "")
+	validateStrIn(e, "type", r.Type, "unicast", "unreachable", "blackhole", "prohibit", "")
+	if t, ok := validateInt(e, "table", r.Table, 0, math.MaxUint32, 0); ok {
+		r.Table = t
+	}
+	if m, ok := validateInt(e, "metric", r.Metric, 0, math.MaxUint32, 100); ok {
+		r.Metric = m
+	}
+	switch r.Type {
+	case "unicast":
+		if r.To == nil || r.Via == nil {
+			e.Errorf("unicast routes require 'to' and 'via'")
+		}
+	default:
+		if r.To == nil {
+			e.Errorf("%s routes require 'to'", r.Type)
+		}
+	}
+	return e.OrNil()
 }
 
 type RoutePolicy struct {
-	From     *IP    `json:"from"`
-	To       *IP    `json:"to"`
-	Table    uint64 `json:"table"`
-	Priority uint64 `json:"priority"`
-	FWMark   uint64 `json:"fwmark"`
-	TOS      int64  `json:"type-of-service"`
+	From     *IP `json:"from,omitempty"`
+	To       *IP `json:"to,omitempty"`
+	Table    int `json:"table,omitempty"`
+	Priority int `json:"priority,omitempty"`
+	FWMark   int `json:"mark,omitempty"`
+	TOS      int `json:"type-of-service,omitempty"`
 }
 
 func (r *RoutePolicy) Validate() error {
-	return fmt.Errorf("RoutePolicy Not Implemented")
+	e := &err{prefix: "RoutePolicy"}
+	if (r.From != nil) == (r.To != nil) {
+		e.Errorf("Route policy must include either a From or a To")
+	}
+	if t, ok := validateInt(e, "table", r.Table, 0, math.MaxUint32, 0); ok {
+		r.Table = t
+	}
+	if t, ok := validateInt(e, "mark", r.FWMark, 0, math.MaxUint32, 0); ok {
+		r.FWMark = t
+	}
+	return e.OrNil()
 }
 
 type Network struct {
@@ -331,13 +359,7 @@ type Physical struct {
 
 func (pi *Physical) Phys(e *err) map[string]Interface {
 	res := map[string]Interface{}
-	if pi.MatchID == "mainif" {
-		log.Printf("Matching %s: %#v", pi.MatchID, pi.Match)
-	}
 	for _, intf := range phys {
-		if pi.MatchID == "mainif" {
-			log.Printf("Trying %#v", intf)
-		}
 		if pi.Match.Name != "" {
 			nre := g2re(pi.Match.Name)
 			if !(nre.MatchString(intf.Name) || nre.MatchString(intf.StableName)) {
@@ -376,9 +398,6 @@ func (pi *Physical) Validate() error {
 	e.Merge(pi.Interface.Validate())
 	pi.Parameters["wakeonlan"] = pi.WakeOnLan
 	pf := pi.Phys(e)
-	if pi.MatchID == "mainif" {
-		log.Printf("mainif: %#v", pi)
-	}
 	switch len(pf) {
 	case 0:
 		e.Errorf("Ethernet network %s does not match any physical interfaces!", pi.MatchID)
@@ -522,8 +541,6 @@ func (v *Vlan) Validate() error {
 	e.Merge(v.Interface.Validate())
 	validateInt(e, "id", v.ID, 0, 4094, 0)
 	v.Parameters["id"] = v.ID
-
-	log.Printf("vlan %s: %v", v.MatchID, v.Interfaces)
 	return e.OrNil()
 }
 
@@ -567,11 +584,6 @@ func (n *Netplan) Read(src string) (*Layout, error) {
 	if err := yaml.Unmarshal(buf, n); err != nil {
 		return nil, err
 	}
-	buf, err = yaml.Marshal(n)
-	if err != nil {
-		log.Printf("Error marshalling netplan: %v", err)
-	}
-	os.Stderr.Write(buf)
 	return n.Compile()
 }
 

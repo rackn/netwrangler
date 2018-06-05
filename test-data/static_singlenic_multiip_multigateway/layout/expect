@@ -1,0 +1,25 @@
+Child2Parent: {}
+Interfaces:
+  eno1:
+    accept-ra: true
+    addresses:
+    - 10.0.0.10/24
+    - 11.0.0.11/24
+    hwaddr: "52:54:01:23:00:09"
+    match-id: eno1
+    nameservers:
+      addresses:
+      - 8.8.8.8
+      - 8.8.4.4
+    parameters:
+      wakeonlan: false
+    routes:
+    - metric: 100
+      to: 0.0.0.0/0
+      via: 10.0.0.1
+    - metric: 100
+      to: 0.0.0.0/0
+      via: 11.0.0.1
+    type: physical
+Roots:
+- eno1

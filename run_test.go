@@ -146,6 +146,9 @@ func TestNetMangler(t *testing.T) {
 		"test-data/wireless":               true,
 	}
 	for _, testPath := range tests {
+		if st, err := os.Stat(testPath); err == nil && !st.IsDir() {
+			continue
+		}
 		fail := fails[testPath]
 		t.Logf("Testing %s, expect failure: %v", testPath, fail)
 		rt(t, testPath, fail)
