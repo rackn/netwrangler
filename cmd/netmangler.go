@@ -2,12 +2,13 @@ package main
 
 import (
 	"log"
+	"os"
 
-	"github.com/digitalrebar/netmangler"
+	"github.com/rackn/netwrangler"
 )
 
 func main() {
-	if err := netmangler.Run(); err != nil {
+	if err := netwrangler.Run(os.Args...); err != nil {
 		log.Fatal(err)
 	}
 }

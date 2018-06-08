@@ -1,4 +1,4 @@
-package netmangler
+package netwrangler
 
 import (
 	"flag"
@@ -7,11 +7,13 @@ import (
 	"os"
 
 	yaml "github.com/ghodss/yaml"
+	"github.com/rackn/netwrangler/netplan"
+	"github.com/rackn/netwrangler/util"
 )
 
 var (
-	phys        []Phy
-	claimedPhys map[string]Interface
+	phys        []util.Phy
+	claimedPhys map[string]util.Interface
 )
 
 func Run(args ...string) error {
@@ -33,10 +35,10 @@ func Run(args ...string) error {
 		return err
 	}
 	var netErr error
-	claimedPhys = map[string]Interface{}
+	claimedPhys = map[string]util.Interface{}
 	if physIn == "" {
 		if phys == nil {
-			phys, netErr = gatherPhys()
+			phys, netErr = util.GatherPhys()
 		}
 	} else {
 		buf, err := ioutil.ReadFile(physIn)
@@ -58,7 +60,7 @@ func Run(args ...string) error {
 		}
 		out := os.Stdout
 		if dest != "" {
-			out, err := os.Create(dest)
+			out, err = os.Create(dest)
 			if err != nil {
 				return fmt.Errorf("Error opening dest: %v", err)
 			}
@@ -68,12 +70,12 @@ func Run(args ...string) error {
 			return fmt.Errorf("Error saving phys: %v", err)
 		}
 	case "compile":
-		var layout *Layout
+		var layout *util.Layout
 		var err error
 		switch inFmt {
 		case "netplan":
-			np := &Netplan{}
-			layout, err = np.Read(src)
+			np := &netplan.Netplan{}
+			layout, err = np.Read(src, phys)
 		case "layout":
 			layout, err = layout.Read(src)
 		default:
@@ -84,7 +86,7 @@ func Run(args ...string) error {
 		}
 		switch outFmt {
 		case "layout":
-			err = layout.Write(dest)
+			err = layout.Write(layout, dest)
 		default:
 			return fmt.Errorf("Unknown output format %s", outFmt)
 		}

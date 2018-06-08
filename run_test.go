@@ -1,4 +1,4 @@
-package netmangler
+package netwrangler
 
 import (
 	"io/ioutil"
@@ -13,17 +13,18 @@ import (
 	"testing"
 
 	yaml "github.com/ghodss/yaml"
+	"github.com/rackn/netwrangler/util"
 )
 
-func m(s string) HardwareAddr {
+func m(s string) util.HardwareAddr {
 	mac, err := net.ParseMAC(s)
 	if err != nil {
 		log.Panicf("Bad Mac %s: %v", s, err)
 	}
-	return HardwareAddr(mac)
+	return util.HardwareAddr(mac)
 }
 
-var testPhys = []Phy{
+var testPhys = []util.Phy{
 	{Name: "enp9s5", Driver: "foobar2000", HwAddr: m("de:ad:be:ef:ca:fe")},
 	{Name: "enp0s25", Driver: "broadcom", HwAddr: m("52:54:01:23:00:00")},
 	{Name: "enp1s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:01")},
@@ -76,7 +77,7 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 		os.RemoveAll("wantErr")
 	}
 	os.RemoveAll("untouched")
-	claimedPhys = map[string]Interface{}
+	claimedPhys = map[string]util.Interface{}
 	actualOut := path.Join(out, "actual")
 	expectOut := path.Join(out, "expect")
 	actualErr := path.Join(out, "actualErr")
@@ -121,7 +122,7 @@ func TestPhys(t *testing.T) {
 	} else {
 		t.Logf("orig: %s", string(buf))
 	}
-	np := []Phy{}
+	np := []util.Phy{}
 	if err := yaml.Unmarshal(buf, &np); err != nil {
 		t.Errorf("Error unmarshalling phys: %v", err)
 		return

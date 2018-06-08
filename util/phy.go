@@ -1,4 +1,4 @@
-package netmangler
+package util
 
 import (
 	"bufio"
@@ -10,12 +10,24 @@ import (
 	"strings"
 )
 
+// Match is a utility struct for matching physical interfaces against
+// interfaces present on the machine.
+type Match struct {
+	Name       string       `json:"name,omitempty"`
+	MacAddress HardwareAddr `json:"macaddress,omitempty"`
+	Driver     string       `json:"driver,omitempty"`
+}
+
+// Phy represents a physical interface that is actually present on the
+// system being configured.
 type Phy struct {
 	Name, StableName, Driver string
 	HwAddr                   HardwareAddr
 }
 
-func gatherPhys() ([]Phy, error) {
+// GatherPhys gathers all the physical interfaces present on the machine.
+// Loopback interfaces and virtual interfaces will be skipped.
+func GatherPhys() ([]Phy, error) {
 	baseifs, err := net.Interfaces()
 	if err != nil {
 		return nil, err
