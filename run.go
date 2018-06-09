@@ -86,7 +86,7 @@ func Run(args ...string) error {
 		}
 		switch outFmt {
 		case "layout":
-			err = layout.Write(layout, dest)
+			err = layout.Write(dest)
 		default:
 			return fmt.Errorf("Unknown output format %s", outFmt)
 		}

@@ -17,7 +17,6 @@
 package netplan
 
 import (
-	"bytes"
 	"io/ioutil"
 	"math"
 	"os"
@@ -33,8 +32,9 @@ func nameservers() util.Validator {
 		"nameservers": util.C(util.VIPS(false)),
 	}
 	return func(e *util.Err, k string, ns interface{}) (interface{}, bool) {
-		res := util.Nameservers{Search: []string{}, Addresses: []*util.IP{}}
-		return res, util.ValidateAndMarshal(e, ns, checks, &res)
+		res := &util.Nameservers{Search: []string{}, Addresses: []*util.IP{}}
+		resOK := util.ValidateAndMarshal(e, ns, checks, res)
+		return res, resOK
 	}
 }
 
@@ -44,7 +44,7 @@ func routes() util.Validator {
 		"to":      util.C(util.VIP()),
 		"via":     util.C(util.VIP()),
 		"on-link": util.C(util.VB()),
-		"metric":  util.D(100, util.VI(0, math.MaxUint32)),
+		"metric":  util.C(util.VI(0, math.MaxUint32)),
 		"table":   util.C(util.VI(0, math.MaxUint32)),
 		"scope":   util.C(util.VS("global", "link", "host")),
 		"type":    util.D("unicast", util.VS("unicast", "unreachable", "blackhole", "prohibit")),
@@ -115,7 +115,7 @@ func network() util.Validator {
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := &util.Network{}
-		return res, util.ValidateAndMarshal(e, v, checks, res)
+		return res, util.ValidateAndMarshal(e, v, checks, &res)
 	}
 }
 
@@ -127,41 +127,24 @@ func phymatch() util.Validator {
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := util.Match{}
-		return res, util.ValidateAndMarshal(e, v, checks, &res)
+		resOK := util.ValidateAndMarshal(e, v, checks, &res)
+		return res, resOK
 	}
 }
 
 type phy struct {
-	Network *util.Network
-	Intf    util.Interface
-	Match   util.Match `json:"match"`
-	WOL     bool       `json:"wakeonlan"`
+	Intf  util.Interface
+	Match util.Match `json:"match"`
+	WOL   bool       `json:"wakeonlan"`
 }
 
 func (pi phy) MatchPhys(phys []util.Phy) []util.Interface {
-	res := []util.Interface{}
 	if pi.Match.Name == "" &&
 		pi.Match.Driver == "" &&
 		len(pi.Match.MacAddress) == 0 {
 		pi.Match.Name = pi.Intf.MatchID
 	}
-	for _, phyInt := range phys {
-		if pi.Match.Name != "" && !util.Glob2RE(pi.Match.Name).MatchString(phyInt.Name) {
-			continue
-		}
-		if pi.Match.Driver != "" && pi.Match.Driver != phyInt.Driver {
-			continue
-		}
-		if len(pi.Match.MacAddress) > 0 && !bytes.Equal(pi.Match.MacAddress, phyInt.HwAddr) {
-			continue
-		}
-		intf := pi.Intf
-		intf.Name = phyInt.Name
-		intf.CurrentHwAddr = phyInt.HwAddr
-		intf.Network = pi.Network
-		res = append(res, intf)
-	}
-	return res
+	return util.MatchPhys(pi.Match, pi.Intf, phys)
 }
 
 func ethernet() util.Validator {
@@ -183,8 +166,10 @@ func ethernet() util.Validator {
 			return res, false
 		}
 		res.Intf.Type = "physical"
-		res.Intf.Parameters["wakeonlan"] = res.WOL
-		res.Network = nw.(*util.Network)
+		if res.WOL {
+			res.Intf.Parameters["wakeonlan"] = res.WOL
+		}
+		res.Intf.Network = nw.(*util.Network)
 		return res, true
 	}
 }
@@ -192,7 +177,8 @@ func ethernet() util.Validator {
 func pValidate(checks map[string]*util.Check) util.Validator {
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := map[string]interface{}{}
-		return res, util.ValidateAndMarshal(e, v, checks, &res)
+		resOK := util.ValidateAndMarshal(e, v, checks, &res)
+		return res, resOK
 	}
 }
 
@@ -230,38 +216,36 @@ func bridge() util.Validator {
 }
 
 func bond() util.Validator {
-	return bb("bridge", map[string]*util.Check{
-		"mode": util.D("balance-rr",
-			util.VS("balance-rr",
-				"active-backup",
-				"balance-xor",
-				"broadcast",
-				"802.3ad",
-				"balance-tlb",
-				"balance-alb")),
-		"lacp-rate":            util.D("slow", util.VS("fast", "slow")),
-		"mii-monitor-interval": util.D(0, util.VI(0, math.MaxInt8)),
-		"min-links":            util.D(1, util.VI(1, math.MaxInt8)),
-		"transmit-hash-policy": util.D("layer2",
-			util.VS("layer2",
-				"layer3+4",
-				"layer2+3",
-				"encap2+3",
-				"encap3+4")),
-		"ad-select":               util.D("stable", util.VS("stable", "bandwidth", "count")),
-		"all-slaves-active":       util.D(false, util.VB()),
+	return bb("bond", map[string]*util.Check{
+		"mode": util.C(util.VS("balance-rr",
+			"active-backup",
+			"balance-xor",
+			"broadcast",
+			"802.3ad",
+			"balance-tlb",
+			"balance-alb")),
+		"lacp-rate":            util.C(util.VS("fast", "slow")),
+		"mii-monitor-interval": util.C(util.VI(0, math.MaxInt8)),
+		"min-links":            util.C(util.VI(1, math.MaxInt8)),
+		"transmit-hash-policy": util.C(util.VS("layer2",
+			"layer3+4",
+			"layer2+3",
+			"encap2+3",
+			"encap3+4")),
+		"ad-select":               util.C(util.VS("stable", "bandwidth", "count")),
+		"all-slaves-active":       util.C(util.VB()),
 		"arp-interval":            util.C(util.VI(0, math.MaxInt8)),
 		"arp-ip-targets":          util.C(util.VIPS(false)),
-		"arp-validate":            util.D("none", util.VS("none", "active", "backup", "all")),
-		"arp-all-targets":         util.D("any", util.VS("any", "all")),
-		"up-delay":                util.D(0, util.VI(0, math.MaxInt8)),
-		"down-delay":              util.D(0, util.VI(0, math.MaxInt8)),
-		"fail-over-mac-policy":    util.D("none", util.VS("none", "active", "follow")),
-		"gratuitious-arp":         util.D(1, util.VI(1, 127)),
-		"packets-per-slave":       util.D(1, util.VI(0, 65535)),
+		"arp-validate":            util.C(util.VS("none", "active", "backup", "all")),
+		"arp-all-targets":         util.C(util.VS("any", "all")),
+		"up-delay":                util.C(util.VI(0, math.MaxInt8)),
+		"down-delay":              util.C(util.VI(0, math.MaxInt8)),
+		"fail-over-mac-policy":    util.C(util.VS("none", "active", "follow")),
+		"gratuitious-arp":         util.C(util.VI(1, 127)),
+		"packets-per-slave":       util.C(util.VI(0, 65535)),
 		"primary-reselect-policy": util.C(util.VS("always", "better", "failure")),
 		"resend-igmp":             util.C(util.VI(0, 255)),
-		"learn-packet-interval":   util.D(1, util.VI(1, 0x7fffffff)),
+		"learn-packet-interval":   util.C(util.VI(1, 0x7fffffff)),
 		"primary":                 util.C(util.VS()),
 	})
 }
@@ -291,7 +275,7 @@ type Netplan struct {
 		Bonds     map[string]interface{} `json:"bonds"`
 		Vlans     map[string]interface{} `json:"vlans"`
 		Wifis     map[string]interface{} `json:"wifis"`
-	} `json:"networks"`
+	} `json:"network"`
 }
 
 func getNames(i map[string]interface{}) []string {
@@ -316,11 +300,20 @@ func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 		e.Errorf("Wifi interfaces not supported")
 	}
 	// Keep track of all known tags
-	addOther := func(intf util.Interface) {
+	addOther := func(name, matchID string, intf util.Interface) {
+		intf.Name = name
+		intf.MatchID = matchID
 		if other, ok := l.Interfaces[intf.Name]; ok {
 			e.Errorf("Duplicate network definition! %s also defined in %s", intf.Name, other.Type)
 		} else {
-			l.Interfaces[intf.Name] = intf
+			l.Interfaces[name] = intf
+		}
+		for _, k := range intf.Interfaces {
+			for _, newIntf := range util.MatchPhys(util.Match{Name: k}, util.Interface{}, phys) {
+				if _, ok := l.Interfaces[newIntf.Name]; !ok {
+					l.Interfaces[newIntf.Name] = newIntf
+				}
+			}
 		}
 	}
 	matchChildren := map[string][]string{}
@@ -342,7 +335,6 @@ func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 			continue
 		}
 		intf := nv.(phy)
-		intf.Intf.Network = intf.Network
 		intf.Intf.MatchID = k
 		realInts := intf.MatchPhys(phys)
 		if len(realInts) == 0 {
@@ -352,26 +344,26 @@ func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 		intNames := []string{}
 		for _, realInt := range realInts {
 			intNames = append(intNames, realInt.Name)
-			addOther(realInt)
+			addOther(realInt.Name, k, realInt)
 		}
 		matchChildren[k] = intNames
 	}
 	for _, k := range getNames(n.Network.Bonds) {
 		nv, valid := bond()(e, "bond:"+k, n.Network.Bonds[k])
 		if valid {
-			addOther(nv.(util.Interface))
+			addOther(k, k, nv.(util.Interface))
 		}
 	}
 	for _, k := range getNames(n.Network.Bridges) {
 		nv, valid := bridge()(e, "bridge:"+k, n.Network.Bridges[k])
 		if valid {
-			addOther(nv.(util.Interface))
+			addOther(k, k, nv.(util.Interface))
 		}
 	}
 	for _, k := range getNames(n.Network.Vlans) {
 		nv, valid := vlan()(e, "vlan:"+k, n.Network.Vlans[k])
 		if valid {
-			addOther(nv.(util.Interface))
+			addOther(k, k, nv.(util.Interface))
 		}
 	}
 	for k, v := range l.Interfaces {

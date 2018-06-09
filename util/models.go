@@ -1,4 +1,4 @@
-// package util defines common models and utility functions.
+// Package util defines common models and utility functions.
 package util
 
 import (
@@ -30,7 +30,7 @@ type Reader interface {
 
 // Writer is implemented by all target formats that netwrangler understands
 type Writer interface {
-	Write(*Layout, string) error
+	Write(string) error
 }
 
 // Err is used to allow code to pile up errors for validation and

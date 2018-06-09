@@ -25,6 +25,27 @@ type Phy struct {
 	HwAddr                   HardwareAddr
 }
 
+func MatchPhys(m Match, tmpl Interface, phys []Phy) []Interface {
+	res := []Interface{}
+	for _, phyInt := range phys {
+		if m.Name != "" && !Glob2RE(m.Name).MatchString(phyInt.Name) {
+			continue
+		}
+		if m.Driver != "" && m.Driver != phyInt.Driver {
+			continue
+		}
+		if len(m.MacAddress) > 0 && !bytes.Equal(m.MacAddress, phyInt.HwAddr) {
+			continue
+		}
+		intf := tmpl
+		intf.Name = phyInt.Name
+		intf.Type = "physical"
+		intf.CurrentHwAddr = phyInt.HwAddr
+		res = append(res, intf)
+	}
+	return res
+}
+
 // GatherPhys gathers all the physical interfaces present on the machine.
 // Loopback interfaces and virtual interfaces will be skipped.
 func GatherPhys() ([]Phy, error) {

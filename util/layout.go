@@ -3,57 +3,10 @@ package util
 import (
 	"io/ioutil"
 	"log"
-	"math"
 	"os"
 	"sort"
 
-	yaml "gopkg.in/yaml.v2"
-)
-
-var (
-	checkers = map[string]map[string]*Check{
-		"physical": {
-			"wakeonlan": D(false, VB()),
-		},
-		"bridge": {},
-		"bond": {
-			"mode": D("balance-rr",
-				VS("balance-rr",
-					"active-backup",
-					"balance-xor",
-					"broadcast",
-					"802.3ad",
-					"balance-tlb",
-					"balance-alb")),
-			"lacp-rate":            D("slow", VS("fast", "slow")),
-			"mii-monitor-interval": D(0, VI(0, math.MaxInt8)),
-			"min-links":            D(1, VI(1, math.MaxInt8)),
-			"transmit-hash-policy": D("layer2",
-				VS("layer2",
-					"layer3+4",
-					"layer2+3",
-					"encap2+3",
-					"encap3+4")),
-			"ad-select":               D("stable", VS("stable", "bandwidth", "count")),
-			"all-slaves-active":       D(false, VB()),
-			"arp-interval":            C(VI(0, math.MaxInt8)),
-			"arp-ip-targets":          C(VIPS(false)),
-			"arp-validate":            D("none", VS("none", "active", "backup", "all")),
-			"arp-all-targets":         D("any", VS("any", "all")),
-			"up-delay":                D(0, VI(0, math.MaxInt8)),
-			"down-delay":              D(0, VI(0, math.MaxInt8)),
-			"fail-over-mac-policy":    D("none", VS("none", "active", "follow")),
-			"gratuitious-arp":         D(1, VI(1, 127)),
-			"packets-per-slave":       D(1, VI(0, 65535)),
-			"primary-reselect-policy": C(VS("always", "better", "failure")),
-			"resend-igmp":             C(VI(0, 255)),
-			"learn-packet-interval":   D(1, VI(1, 0x7fffffff)),
-			"primary":                 C(VS()),
-		},
-		"vlan": {
-			"id": C(VI(0, 4094)),
-		},
-	}
+	yaml "github.com/ghodss/yaml"
 )
 
 // Route defines a static route to be used if setting up policy routes.
@@ -84,16 +37,6 @@ type Route struct {
 
 func (r *Route) validate() error {
 	e := &Err{Prefix: "Route"}
-	ValidateStrIn(e, "scope", r.Scope, "global", "link", "host", "")
-	ValidateStrIn(e, "type", r.Type, "unicast", "unreachable", "blackhole", "prohibit", "")
-	ValidateInt(e, "table", r.Table, 0, math.MaxUint32)
-	ValidateInt(e, "metric", r.Metric, 0, math.MaxUint32)
-	if r.Metric == 0 {
-		r.Metric = 100
-	}
-	if r.Type == "" {
-		r.Type = "unicast"
-	}
 	if r.Via != nil && r.Via.IsCIDR() {
 		e.Errorf("Via must be a single IP address, not %s", r.Via)
 	}
@@ -136,12 +79,7 @@ func (r *RoutePolicy) validate() error {
 	if (r.From != nil) == (r.To != nil) {
 		e.Errorf("Route policy must include either a From or a To")
 	}
-	if t, ok := ValidateInt(e, "table", r.Table, 0, math.MaxUint32); ok {
-		r.Table = t
-	}
-	if t, ok := ValidateInt(e, "mark", r.FWMark, 0, math.MaxUint32); ok {
-		r.FWMark = t
-	}
+
 	return e.OrNil()
 }
 
@@ -182,7 +120,7 @@ type Network struct {
 	Gateway6 *IP `json:"gateway6,omitempty"`
 	// Nameservers defines what DNS name servers and search domains
 	// should be used.
-	Nameservers Nameservers `json:"nameservers,omitempty"`
+	Nameservers *Nameservers `json:"nameservers,omitempty"`
 	// Routes defines any additional routes that should be added for
 	// this interface when it s brought up.
 	Routes []Route `json:"routes,omitempty"`
@@ -347,7 +285,7 @@ type Interface struct {
 	// CurrentHwAddr is the MAC address of a physical interface.  The
 	// Read() function of the input format is responsible for setting
 	// this to a proper value.
-	CurrentHwAddr HardwareAddr `json:"hwaddr"`
+	CurrentHwAddr HardwareAddr `json:"hwaddr,omitempty"`
 	// Optional indicates to the output format that this interface is
 	// not required to be present or created for it to finish bringing
 	// up the network.  Optionality bubbles upwards from child to
@@ -382,50 +320,6 @@ func (i *Interface) validate(l *Layout) error {
 		if _, ok := l.Interfaces[name]; !ok {
 			e.Errorf("%s:%s refers to undefined sub interface %s", i.Type, i.Name, name)
 		}
-	}
-	if i.Parameters == nil {
-		i.Parameters = map[string]interface{}{}
-	}
-	knownParams := []string{}
-	for k := range checkers[i.Type] {
-		knownParams = append(knownParams, k)
-	}
-	sort.Strings(knownParams)
-	for _, k := range knownParams {
-		check := checkers[i.Type][k]
-		if v, ok := i.Parameters[k]; ok {
-			if nv, valid := check.c(e, k, v); valid {
-				i.Parameters[k] = nv
-			}
-		} else if check.d != nil {
-			i.Parameters[k] = check.d
-		}
-	}
-	badParams := []string{}
-	for k := range i.Parameters {
-		if _, ok := checkers[i.Type][k]; !ok {
-			badParams = append(badParams, k)
-		}
-	}
-	if len(badParams) != 0 {
-		sort.Strings(badParams)
-		e.Errorf("Unknown parameters: %v", badParams)
-	}
-	if !e.Empty() {
-		return e
-	}
-	switch i.Type {
-	case "physical":
-		validatePhysical(l, i, e)
-	case "bridge", "bond":
-		validateExclusive(l, i, e)
-	case "vlan":
-		validateShared(l, i, e)
-	default:
-		e.Errorf("Unknown type of interface: %v", i.Type)
-	}
-	if i.Network != nil {
-		e.Merge(i.Network.validate())
 	}
 	return e.OrNil()
 }
@@ -465,7 +359,7 @@ func (l *Layout) Read(src string) (*Layout, error) {
 	return l, yaml.Unmarshal(buf, l)
 }
 
-func (l *Layout) Write(ll *Layout, dest string) error {
+func (l *Layout) Write(dest string) error {
 	out := os.Stdout
 	if dest != "" {
 		o, e := os.Create(dest)
@@ -475,7 +369,7 @@ func (l *Layout) Write(ll *Layout, dest string) error {
 		defer o.Close()
 		out = o
 	}
-	buf, err := yaml.Marshal(ll)
+	buf, err := yaml.Marshal(l)
 	if err != nil {
 		return err
 	}

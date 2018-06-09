@@ -64,7 +64,7 @@ func ValidateInt(e *Err, k string, v interface{}, min, max int) (res int, valid 
 		e.Errorf("%s: Cannot cast %T(%v) to an %T(%v)", k, v, v, vv, vv)
 		return
 	}
-	if valid = min > res || res > max; !valid {
+	if valid = (min <= res && res <= max); !valid {
 		e.Errorf("%s: %d out of range %d:%d", k, res, min, max)
 	}
 	return
@@ -197,8 +197,10 @@ func ValidateAndMarshal(e *Err, vals interface{}, checks map[string]*Check, val 
 	resOK := true
 	for key, check := range checks {
 		v, found := m[key]
-		if !found && check.d != nil {
-			res[check.keyName(key)] = check.d
+		if !found {
+			if check.d != nil {
+				res[check.keyName(key)] = check.d
+			}
 		} else {
 			nv, valid := check.Validate(e, key, v)
 			if valid {
