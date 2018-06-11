@@ -1,33 +1,28 @@
 Child2Parent:
-  enp0s25: vlan15
-  vlan15: br0
+  vlan15:
+  - br0
 Interfaces:
   br0:
-    accept-ra: true
-    addresses:
-    - 10.3.99.25/24
-    hwaddr: ""
     interfaces:
     - vlan15
     match-id: br0
-    nameservers: {}
+    name: br0
+    network:
+      accept-ra: true
+      addresses:
+      - 10.3.99.25/24
     type: bridge
   enp0s25:
-    accept-ra: true
-    dhcp4: true
     hwaddr: "52:54:01:23:00:00"
     match-id: enp0s25
-    nameservers: {}
-    parameters:
-      wakeonlan: false
+    name: enp0s25
+    network:
+      accept-ra: true
+      dhcp4: true
     type: physical
   vlan15:
-    accept-ra: true
-    hwaddr: ""
-    interfaces:
-    - enp0s25
     match-id: vlan15
-    nameservers: {}
+    name: vlan15
     type: vlan
 Roots:
-- br0
+- enp0s25

@@ -1,39 +1,39 @@
 Child2Parent: {}
 Interfaces:
   ens3:
-    accept-ra: true
-    addresses:
-    - 192.168.3.30/24
     hwaddr: "52:54:01:23:00:07"
     match-id: ens3
-    nameservers: {}
-    parameters:
-      wakeonlan: false
-    routes:
-    - table: 101
-      to: 192.168.3.0/24
-      via: 192.168.3.1
-    routing-policy:
-    - from: 192.168.3.0/24
-      table: 101
+    name: ens3
+    network:
+      accept-ra: true
+      addresses:
+      - 192.168.3.30/24
+      routes:
+      - table: 101
+        to: 192.168.3.0/24
+        type: unicast
+        via: 192.168.3.1
+      routing-policy:
+      - from: 192.168.3.0/24
+        table: 101
     type: physical
   ens5:
-    accept-ra: true
-    addresses:
-    - 192.168.5.24/24
-    gateway4: 192.168.5.1
     hwaddr: "52:54:01:23:00:08"
     match-id: ens5
-    nameservers: {}
-    parameters:
-      wakeonlan: false
-    routes:
-    - table: 102
-      to: 192.168.5.0/24
-      via: 192.168.5.1
-    routing-policy:
-    - from: 192.168.5.0/24
-      table: 102
+    name: ens5
+    network:
+      accept-ra: true
+      addresses:
+      - 192.168.5.24/24
+      gateway4: 192.168.5.1
+      routes:
+      - table: 102
+        to: 192.168.5.0/24
+        type: unicast
+        via: 192.168.5.1
+      routing-policy:
+      - from: 192.168.5.0/24
+        table: 102
     type: physical
 Roots:
 - ens3

@@ -1,1 +1,6 @@
-Error reading 'netplan': error unmarshaling JSON: while decoding JSON: json: cannot unmarshal array into Go struct field .ethernets of type netmangler.Physical
+Error reading 'netplan': netplan:
+cannot validate format []interface {}
+[]interface {} not castable to an ethernet interface
+cannot validate format []interface {}
+[]interface {} not castable to an ethernet interface
+

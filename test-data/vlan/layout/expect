@@ -1,47 +1,28 @@
-Child2Parent:
-  enp9s5: vlan15
+Child2Parent: {}
 Interfaces:
   enp9s5:
-    accept-ra: true
-    addresses:
-    - 10.3.0.5/23
-    gateway4: 10.3.0.1
     hwaddr: de:ad:be:ef:ca:fe
     match-id: mainif
-    nameservers:
+    name: enp9s5
+    network:
+      accept-ra: true
       addresses:
-      - 8.8.8.8
-      - 8.8.4.4
-      search:
-      - example.com
-    parameters:
-      wakeonlan: false
+      - 10.3.0.5/23
+      gateway4: 10.3.0.1
+      nameservers:
+        addresses:
+        - 8.8.8.8
+        - 8.8.4.4
+        search:
+        - example.com
     type: physical
   vlan10:
-    accept-ra: true
-    addresses:
-    - 10.3.98.5/24
-    hwaddr: ""
-    interfaces:
-    - enp9s5
     match-id: vlan10
-    nameservers:
-      addresses:
-      - 127.0.0.1
-      search:
-      - domain1.example.com
-      - domain2.example.com
+    name: vlan10
     type: vlan
   vlan15:
-    accept-ra: true
-    addresses:
-    - 10.3.99.5/24
-    hwaddr: ""
-    interfaces:
-    - enp9s5
     match-id: vlan15
-    nameservers: {}
+    name: vlan15
     type: vlan
 Roots:
-- vlan10
-- vlan15
+- enp9s5

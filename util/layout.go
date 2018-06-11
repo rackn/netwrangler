@@ -83,7 +83,7 @@ func (r *RoutePolicy) validate() error {
 	return e.OrNil()
 }
 
-type Nameservers struct {
+type NSInfo struct {
 	Search    []string `json:"search,omitempty"`
 	Addresses []*IP    `json:"addresses,omitempty"`
 }
@@ -120,7 +120,7 @@ type Network struct {
 	Gateway6 *IP `json:"gateway6,omitempty"`
 	// Nameservers defines what DNS name servers and search domains
 	// should be used.
-	Nameservers *Nameservers `json:"nameservers,omitempty"`
+	Nameservers *NSInfo `json:"nameservers,omitempty"`
 	// Routes defines any additional routes that should be added for
 	// this interface when it s brought up.
 	Routes []Route `json:"routes,omitempty"`
@@ -315,10 +315,66 @@ func (i *Interface) validate(l *Layout) error {
 	if i.Interfaces == nil {
 		i.Interfaces = []string{}
 	}
+	if i.Type == "physical" {
+		if len(i.Interfaces) > 0 {
+			e.Errorf("%s:%s must not refer to sub interfaces %v", i.Type, i.Name, i.Interfaces)
+		}
+		l.Roots = append(l.Roots, i.Name)
+		return e.OrNil()
+	}
 	sort.Strings(i.Interfaces)
 	for _, name := range i.Interfaces {
-		if _, ok := l.Interfaces[name]; !ok {
+		child, ok := l.Interfaces[name]
+		if !ok {
 			e.Errorf("%s:%s refers to undefined sub interface %s", i.Type, i.Name, name)
+			continue
+		}
+		switch i.Type {
+		case "bond":
+			if child.Type != "physical" {
+				e.Errorf("%s:%s refers to %s:%s, which is not a physical interface.", i.Type, i.Name, child.Type, child.Name)
+				continue
+			}
+		case "bridge":
+			if child.Type == "bridge" {
+				e.Errorf("%s:%s cannot be built on %s:%s", i.Type, i.Name, child.Type, child.Name)
+				continue
+			}
+		case "vlan":
+			if child.Type == "vlan" {
+				e.Errorf("%s:%s cannot be built on %s:%s", i.Type, i.Name, child.Type, child.Name)
+				continue
+			}
+		default:
+			log.Panicf("Cannot happen handling %s:%s -> %s:%s", child.Type, child.Name, i.Type, i.Name)
+		}
+		otherNames, ok := l.Child2Parent[name]
+		if !ok {
+			l.Child2Parent[name] = []string{i.Name}
+			continue
+		}
+		for _, otherName := range otherNames {
+			other := l.Interfaces[otherName]
+			switch i.Type {
+			case "bridge", "bond":
+				e.Errorf("%s:%s is already owned by %s:%s, it canot be a member of %s:%s",
+					child.Type, child.Name,
+					other.Type, other.Name,
+					i.Type, i.Name)
+				continue
+			case "vlan":
+				if other.Type != "vlan" {
+					e.Errorf("%s:%s is already owned by %s:%s, it canot be a member of %s:%s",
+						child.Type, child.Name,
+						other.Type, other.Name,
+						i.Type, i.Name)
+					continue
+				}
+				l.Child2Parent[child.Name] = append(l.Child2Parent[child.Name], i.Name)
+				sort.Strings(l.Child2Parent[child.Name])
+			default:
+				log.Panicf("Cannot happen handling %s:%s <-> %s:%s", child.Type, child.Name, other.Type, other.Name)
+			}
 		}
 	}
 	return e.OrNil()
@@ -408,6 +464,7 @@ func (l *Layout) cyclic(intf string, working []string, clean map[string]struct{}
 func (l *Layout) Validate() error {
 	e := &Err{Prefix: "layout"}
 	l.Roots = []string{}
+	l.Child2Parent = map[string][]string{}
 	members := []string{}
 	for k := range l.Interfaces {
 		members = append(members, k)

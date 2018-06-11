@@ -1,21 +1,21 @@
 Child2Parent: {}
 Interfaces:
   enp3s0:
-    accept-ra: true
-    addresses:
-    - 10.10.10.2/24
-    gateway4: 10.10.10.1
     hwaddr: "52:54:01:23:00:03"
     match-id: enp3s0
-    nameservers:
+    name: enp3s0
+    network:
+      accept-ra: true
       addresses:
-      - 10.10.10.1
-      - 1.1.1.1
-      search:
-      - mydomain
-      - otherdomain
-    parameters:
-      wakeonlan: false
+      - 10.10.10.2/24
+      gateway4: 10.10.10.1
+      nameservers:
+        addresses:
+        - 10.10.10.1
+        - 1.1.1.1
+        search:
+        - mydomain
+        - otherdomain
     type: physical
 Roots:
 - enp3s0

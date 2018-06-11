@@ -1,16 +1,18 @@
 Child2Parent:
-  enp3s0: bond0
-  enp4s0: bond0
+  enp3s0:
+  - bond0
+  enp4s0:
+  - bond0
 Interfaces:
   bond0:
-    accept-ra: true
-    dhcp4: true
-    hwaddr: ""
     interfaces:
     - enp3s0
     - enp4s0
     match-id: bond0
-    nameservers: {}
+    name: bond0
+    network:
+      accept-ra: true
+      dhcp4: true
     parameters:
       mode: active-backup
       primary: enp3s0
@@ -18,10 +20,13 @@ Interfaces:
   enp3s0:
     hwaddr: "52:54:01:23:00:03"
     match-id: enp3s0
+    name: enp3s0
     type: physical
   enp4s0:
     hwaddr: "52:54:01:23:00:04"
     match-id: enp4s0
+    name: enp4s0
     type: physical
 Roots:
-- bond0
+- enp3s0
+- enp4s0

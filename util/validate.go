@@ -190,7 +190,7 @@ func C(checker Validator) *Check {
 func ValidateAndMarshal(e *Err, vals interface{}, checks map[string]*Check, val interface{}) bool {
 	m, ok := vals.(map[string]interface{})
 	if !ok {
-		e.Errorf("cannot validate format %T: %v", vals, vals)
+		e.Errorf("cannot validate format %T", vals)
 		return false
 	}
 	res := map[string]interface{}{}
@@ -201,17 +201,17 @@ func ValidateAndMarshal(e *Err, vals interface{}, checks map[string]*Check, val 
 			if check.d != nil {
 				res[check.keyName(key)] = check.d
 			}
-		} else {
-			nv, valid := check.Validate(e, key, v)
-			if valid {
-				if check.v != nil {
-					nv = check.v(nv)
-				}
-				res[check.keyName(key)] = nv
-			} else {
-				resOK = false
-			}
+			continue
 		}
+		nv, valid := check.Validate(e, key, v)
+		if !valid {
+			resOK = false
+			continue
+		}
+		if check.v != nil {
+			nv = check.v(nv)
+		}
+		res[check.keyName(key)] = nv
 	}
 	if resOK {
 		err := Remarshal(res, val)
@@ -277,7 +277,7 @@ func VIP() Validator {
 func VIP4() Validator {
 	return func(e *Err, k string, v interface{}) (interface{}, bool) {
 		res, valid := ValidateIP(e, k, v)
-		valid = valid && res.IP.To4() == nil
+		valid = valid && res.IP.To4() != nil
 		return res, valid
 	}
 }
@@ -287,7 +287,7 @@ func VIP4() Validator {
 func VIP6() Validator {
 	return func(e *Err, k string, v interface{}) (interface{}, bool) {
 		res, valid := ValidateIP(e, k, v)
-		valid = valid && !(res.IP.To4() == nil)
+		valid = valid && res.IP.To4() == nil
 		return res, valid
 	}
 }

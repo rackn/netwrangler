@@ -28,11 +28,11 @@ import (
 
 func nameservers() util.Validator {
 	checks := map[string]*util.Check{
-		"search":      util.C(util.VSS()),
-		"nameservers": util.C(util.VIPS(false)),
+		"search":    util.C(util.VSS()),
+		"addresses": util.C(util.VIPS(false)),
 	}
 	return func(e *util.Err, k string, ns interface{}) (interface{}, bool) {
-		res := &util.Nameservers{Search: []string{}, Addresses: []*util.IP{}}
+		res := &util.NSInfo{}
 		resOK := util.ValidateAndMarshal(e, ns, checks, res)
 		return res, resOK
 	}
@@ -115,7 +115,8 @@ func network() util.Validator {
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := &util.Network{}
-		return res, util.ValidateAndMarshal(e, v, checks, &res)
+		resOK := util.ValidateAndMarshal(e, v, checks, res)
+		return res, resOK
 	}
 }
 
@@ -310,6 +311,7 @@ func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 		}
 		for _, k := range intf.Interfaces {
 			for _, newIntf := range util.MatchPhys(util.Match{Name: k}, util.Interface{}, phys) {
+				newIntf.MatchID = newIntf.Name
 				if _, ok := l.Interfaces[newIntf.Name]; !ok {
 					l.Interfaces[newIntf.Name] = newIntf
 				}
