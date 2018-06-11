@@ -93,9 +93,20 @@ type NSInfo struct {
 	Addresses []*IP `json:"addresses,omitempty"`
 }
 
+func (n *NSInfo) validate() error {
+	e := &Err{Prefix: "nameservers"}
+	ValidateIPList(e, "addresses", n.Addresses, false)
+	return e.OrNil()
+}
+
 // Network defines the layer 3 network configuration that a specific
 // interface should have.
 type Network struct {
+	AcceptRa bool `json:"accept-ra,omitempty"`
+	// Addresses is a list of IP addresses in CIDR format that should be
+	// assigned to this interface.  If this list is set and the DHCP
+	// flags are also set, these addresses and the DHCP addresses will
+	// be added to the interface.
 	// Dhcp4 specifies whether an IPv4 address should be solicited for
 	// this interface via DHCP.
 	Dhcp4 bool `json:"dhcp4,omitempty"`
@@ -111,11 +122,6 @@ type Network struct {
 	// AcceptRa signals that the interface should get an IPv6 address by
 	// autogenerating one in response to an IPv6 router advertisement
 	// packet.
-	AcceptRa bool `json:"accept-ra,omitempty"`
-	// Addresses is a list of IP addresses in CIDR format that should be
-	// assigned to this interface.  If this list is set and the DHCP
-	// flags are also set, these addresses and the DHCP addresses will
-	// be added to the interface.
 	Addresses []*IP `json:"addresses,omitempty"`
 	// Gateway4 is the IPv4 default gateway address that should be set
 	// for this interface.
@@ -168,7 +174,7 @@ func (n *Network) validate() error {
 		e.Errorf("Gateway6 %s is not an IPv6 address", n.Gateway6)
 	}
 	if n.Nameservers != nil {
-		ValidateIPList(e, "nameservers", n.Nameservers.Addresses, false)
+		e.Merge(n.Nameservers.validate())
 	}
 	if n.Routes != nil {
 		for _, route := range n.Routes {

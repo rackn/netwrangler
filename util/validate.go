@@ -5,6 +5,8 @@ import (
 	"strconv"
 )
 
+// Remarshal marshals src into a buf as JSON, then unmarshals that buf
+// into dest.
 func Remarshal(src, dest interface{}) error {
 	buf, err := json.Marshal(src)
 	if err != nil {
@@ -22,7 +24,7 @@ func ValidateUnsupp(e *Err, k string, v interface{}) (res interface{}, valid boo
 	return v, false
 }
 
-// ValidateBool will attempt translate v into a boolean value
+// ValidateBool will attempt translate v into a boolean value.
 func ValidateBool(e *Err, k string, v interface{}) (res, valid bool) {
 	switch val := v.(type) {
 	case bool:
@@ -91,32 +93,41 @@ func ValidateStrIn(e *Err, k string, v interface{}, vals ...string) (res string,
 
 // ValidateMac validates that v is a hardware address
 func ValidateMac(e *Err, k string, v interface{}) (res HardwareAddr, valid bool) {
-	if err := Remarshal(v, &res); err != nil {
-		e.Errorf("%s: Cannot cast %v to a HardwareAddr:%v", k, v, err)
-		return
+	res, valid = v.(HardwareAddr)
+	if !valid {
+		if err := Remarshal(v, &res); err != nil {
+			e.Errorf("%s: Cannot cast %v to a HardwareAddr:%v", k, v, err)
+			return
+		}
+		valid = true
 	}
-	valid = true
 	return
 }
 
 // ValidateIP validates that v is an IP address or address range in CIDR format.
 func ValidateIP(e *Err, k string, v interface{}) (res *IP, valid bool) {
-	if err := Remarshal(v, &res); err != nil {
-		e.Errorf("%s: Cannot cast %v to an IP: %v", k, v, err)
-		return
+	res, valid = v.(*IP)
+	if !valid {
+		if err := Remarshal(v, &res); err != nil {
+			e.Errorf("%s: Cannot cast %v to an IP: %v", k, v, err)
+			return
+		}
+		valid = true
 	}
-	valid = true
 	return
 }
 
 // ValidateIPList validates that v can be represented as a list of *IP
 // objects, and that they are all either CIDR addresses or not.
 func ValidateIPList(e *Err, k string, v interface{}, cidr bool) (res []*IP, valid bool) {
-	valid = true
-	if err := Remarshal(v, &res); err != nil {
-		valid = false
-		e.Errorf("%s: Cannot cast %v to a list of IPs: %v", k, v, err)
-		return
+	res, valid = v.([]*IP)
+	if !valid {
+		if err := Remarshal(v, &res); err != nil {
+			valid = false
+			e.Errorf("%s: Cannot cast %v to a list of IPs: %v", k, v, err)
+			return
+		}
+		valid = true
 	}
 	for _, addr := range res {
 		if addr.IsCIDR() == cidr {

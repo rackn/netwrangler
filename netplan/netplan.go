@@ -139,7 +139,7 @@ type phy struct {
 	WOL   bool       `json:"wakeonlan"`
 }
 
-func (pi phy) MatchPhys(phys []util.Phy) []util.Interface {
+func (pi phy) matchPhys(phys []util.Phy) []util.Interface {
 	if pi.Match.Name == "" &&
 		pi.Match.Driver == "" &&
 		len(pi.Match.MacAddress) == 0 {
@@ -268,6 +268,7 @@ func vlan() util.Validator {
 	}
 }
 
+// Netplan is the basic struct for netplan.io style network configs.
 type Netplan struct {
 	Network struct {
 		Version   int                    `json:"version"`
@@ -338,7 +339,7 @@ func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 		}
 		intf := nv.(phy)
 		intf.Intf.MatchID = k
-		realInts := intf.MatchPhys(phys)
+		realInts := intf.matchPhys(phys)
 		if len(realInts) == 0 {
 			e.Errorf("Ethernet interface %s does not resolve to any interfaces", k)
 			continue
@@ -376,6 +377,8 @@ func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 	return l, e.OrNil()
 }
 
+// Read satisfies the Reader interface so that Netplan can be used as
+// a input format.
 func (n *Netplan) Read(src string, phys []util.Phy) (*util.Layout, error) {
 	in := os.Stdin
 	if src != "" {
