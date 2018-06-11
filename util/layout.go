@@ -83,9 +83,14 @@ func (r *RoutePolicy) validate() error {
 	return e.OrNil()
 }
 
+// NSInfo defines basic information for local name service
+// configuration.
 type NSInfo struct {
-	Search    []string `json:"search,omitempty"`
-	Addresses []*IP    `json:"addresses,omitempty"`
+	// Searsh is a list of domains that should be searched when
+	// resolving domains.
+	Search []string `json:"search,omitempty"`
+	// Addresses is a list of DNS name server addresses.
+	Addresses []*IP `json:"addresses,omitempty"`
 }
 
 // Network defines the layer 3 network configuration that a specific
@@ -162,7 +167,7 @@ func (n *Network) validate() error {
 	if n.Gateway6 != nil && n.Gateway6.IP.To4() != nil {
 		e.Errorf("Gateway6 %s is not an IPv6 address", n.Gateway6)
 	}
-	if n.Nameservers.Addresses != nil {
+	if n.Nameservers != nil {
 		ValidateIPList(e, "nameservers", n.Nameservers.Addresses, false)
 	}
 	if n.Routes != nil {
@@ -176,89 +181,6 @@ func (n *Network) validate() error {
 		}
 	}
 	return e.OrNil()
-}
-
-func validatePhysical(l *Layout, i *Interface, e *Err) {
-	// a physical interface can belong to 1 bond, 1 bridge, or n other interface types
-	// physical interfaces can not own any other interfaces
-	if len(i.CurrentHwAddr) != 0 {
-		e.Errorf("Physical interfaces must have CurrentHwAddr set")
-	}
-	if len(i.Interfaces) != 0 {
-		e.Errorf("Physical interfaces must have no sub interfaces")
-	}
-	l.Roots = append(l.Roots, i.Name)
-}
-
-func validateExclusive(l *Layout, i *Interface, e *Err) {
-	if len(i.Interfaces) == 0 {
-		l.Roots = append(l.Roots, i.Name)
-		return
-	}
-	switch i.Type {
-	case "bridge", "bond":
-		for _, name := range i.Interfaces {
-			intf := l.Interfaces[name]
-			if others, ok := l.Child2Parent[name]; ok {
-				e.Errorf("Sub interface %s already owned by %v", name, others)
-				return
-			}
-			switch i.Type {
-			case "bond":
-				if intf.Type != "physical" {
-					e.Errorf("%s:%s cannot have non-physical sub interface %s:%s", i.Type, i.Name, intf.Type, intf.Name)
-					continue
-				}
-			case "bridge":
-				if intf.Type == "bridge" {
-					e.Errorf("%s:%s cannot have %s:%s as a sub interface", i.Type, i.Name, intf.Type, intf.Name)
-					continue
-				}
-			}
-			l.Child2Parent[name] = []string{i.Name}
-			intf.Network = nil
-		}
-	default:
-		log.Panicf("Interface %s:%s cannot validate as an exclusive owner", i.Type, i.Name)
-	}
-}
-
-func validateShared(l *Layout, i *Interface, e *Err) {
-	switch i.Type {
-	case "bridge", "bond", "physical":
-		log.Panicf("Interface %s:%s cannot validate as a shared owner", i.Type, i.Name)
-	default:
-		if len(i.Interfaces) != 1 {
-			e.Errorf("Interface %s:%s must belong to exactly 1 interface!", i.Type, i.Name)
-			return
-		}
-	}
-	master := l.Interfaces[i.Interfaces[0]]
-	// This is overly restrictive, but will do for now.
-	switch master.Type {
-	case "bridge", "bond", "physical":
-	default:
-		e.Errorf("Cannot build %s:%s on interface %s:%s", i.Type, i.Name, master.Type, master.Name)
-		return
-	}
-	others, ok := l.Child2Parent[master.Name]
-	if !ok {
-		l.Child2Parent[master.Name] = []string{i.Name}
-		return
-	}
-	for _, name := range others {
-		intf := l.Interfaces[name]
-		switch intf.Type {
-		case "bridge", "bond":
-			e.Errorf("Interface %s:%s cannot belong to %s:%s")
-			continue
-		}
-	}
-	if e.Empty() {
-		others = append(others, i.Name)
-		sort.Strings(others)
-		l.Child2Parent[master.Name] = others
-	}
 }
 
 // Interface carries all the information needed to configure any
@@ -303,6 +225,8 @@ type Interface struct {
 	Network *Network `json:"network,omitempty"`
 }
 
+// NewInterface returns a new Interface with non-nil Interfaces and
+// Parameters.
 func NewInterface() Interface {
 	return Interface{
 		Interfaces: []string{},
@@ -322,6 +246,9 @@ func (i *Interface) validate(l *Layout) error {
 		l.Roots = append(l.Roots, i.Name)
 		return e.OrNil()
 	}
+	if i.Network != nil {
+		e.Merge(i.Network.validate())
+	}
 	sort.Strings(i.Interfaces)
 	for _, name := range i.Interfaces {
 		child, ok := l.Interfaces[name]
@@ -335,11 +262,13 @@ func (i *Interface) validate(l *Layout) error {
 				e.Errorf("%s:%s refers to %s:%s, which is not a physical interface.", i.Type, i.Name, child.Type, child.Name)
 				continue
 			}
+			child.Network = nil
 		case "bridge":
 			if child.Type == "bridge" {
 				e.Errorf("%s:%s cannot be built on %s:%s", i.Type, i.Name, child.Type, child.Name)
 				continue
 			}
+			child.Network = nil
 		case "vlan":
 			if child.Type == "vlan" {
 				e.Errorf("%s:%s cannot be built on %s:%s", i.Type, i.Name, child.Type, child.Name)
@@ -393,11 +322,14 @@ type Layout struct {
 	// Child2Parent records the topological order in which interfaces
 	// must be created and/or brought up.
 	Child2Parent map[string][]string
-	// Roots contains the names of interfaces that must be brought up or
-	// created first.
+	// Roots contains the names of interfaces that must be configured
+	// first.  These are generally physical interfaces and virtual
+	// interfaces that can be created as standalone interfaces.
 	Roots []string
 }
 
+// Read() satisifies the Reader interface, although for the internal
+// Layout it is primarily used for debugging purposes.
 func (l *Layout) Read(src string) (*Layout, error) {
 	in := os.Stdin
 	if src != "" {
@@ -415,6 +347,8 @@ func (l *Layout) Read(src string) (*Layout, error) {
 	return l, yaml.Unmarshal(buf, l)
 }
 
+// Write satisfies the Writer interface, although for Layout it is
+// primarily used for debugging and unit test purposes.
 func (l *Layout) Write(dest string) error {
 	out := os.Stdout
 	if dest != "" {
@@ -472,7 +406,7 @@ func (l *Layout) Validate() error {
 	sort.Strings(members)
 	for _, k := range members {
 		v := l.Interfaces[k]
-		v.validate(l)
+		e.Merge(v.validate(l))
 	}
 	if !e.Empty() {
 		return e
