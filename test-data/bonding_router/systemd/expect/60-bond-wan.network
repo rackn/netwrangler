@@ -1,0 +1,10 @@
+[Match]
+Name=bond-wan
+
+[Network]
+IPv6AcceptRA=true
+Address=192.168.1.252/24
+Gateway4=192.168.1.1
+DNS=8.8.8.8
+DNS=8.8.4.4
+Domains=local

@@ -82,6 +82,7 @@ Interfaces:
     name: enp3s0
     network:
       accept-ra: true
+    optional: true
     type: physical
   enp4s0:
     hwaddr: "52:54:01:23:00:04"
@@ -89,6 +90,7 @@ Interfaces:
     name: enp4s0
     network:
       accept-ra: true
+    optional: true
     type: physical
   enp5s0:
     hwaddr: "52:54:01:23:00:05"
@@ -96,6 +98,7 @@ Interfaces:
     name: enp5s0
     network:
       accept-ra: true
+    optional: true
     type: physical
   enp6s0:
     hwaddr: "52:54:01:23:00:06"
@@ -103,6 +106,7 @@ Interfaces:
     name: enp6s0
     network:
       accept-ra: true
+    optional: true
     type: physical
 Roots:
 - bond-conntrack

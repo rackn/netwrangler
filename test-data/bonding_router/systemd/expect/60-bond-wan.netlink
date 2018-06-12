@@ -1,0 +1,7 @@
+[NetDev]
+Name=bond-wan
+Kind=bond
+
+[Bond]
+Mode=active-backup
+MiiMonitorSec=1

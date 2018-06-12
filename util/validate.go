@@ -152,7 +152,7 @@ type Check struct {
 // will be added to e
 func (c *Check) Validate(e *Err, k string, v interface{}) (interface{}, bool) {
 	if c.c == nil {
-		return c.c
+		return v, true
 	}
 	return c.c(e, k, v)
 }

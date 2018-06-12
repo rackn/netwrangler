@@ -134,9 +134,10 @@ func phymatch() util.Validator {
 }
 
 type phy struct {
-	Intf  util.Interface
-	Match util.Match `json:"match"`
-	WOL   bool       `json:"wakeonlan"`
+	Intf     util.Interface
+	Match    util.Match `json:"match"`
+	WOL      bool       `json:"wakeonlan"`
+	Optional bool       `json:"optional"`
 }
 
 func (pi phy) matchPhys(phys []util.Phy) []util.Interface {
@@ -154,6 +155,7 @@ func ethernet() util.Validator {
 		"wakeonlan":  util.C(util.VB()),
 		"set-name":   util.C(util.ValidateUnsupp),
 		"macaddress": util.C(util.ValidateUnsupp),
+		"optional":   util.C(util.VB()),
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := phy{}
@@ -170,6 +172,7 @@ func ethernet() util.Validator {
 		if res.WOL {
 			res.Intf.Parameters["wakeonlan"] = res.WOL
 		}
+		res.Intf.Optional = res.Optional
 		res.Intf.Network = nw.(*util.Network)
 		return res, true
 	}
@@ -188,6 +191,7 @@ func bb(kind string, pchecks map[string]*util.Check) util.Validator {
 		"macaddress": util.C(util.VMAC()),
 		"interfaces": util.C(util.VSS()),
 		"parameters": util.C(pValidate(pchecks)),
+		"optional":   util.C(util.VB()),
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := util.NewInterface()
@@ -252,19 +256,37 @@ func bond() util.Validator {
 }
 
 func vlan() util.Validator {
-	checks := map[string]*util.Check{
+
+	type li struct {
+		L string `json:"link"`
+		I int    `json:"id"`
+	}
+	checksI := map[string]*util.Check{
 		"macaddress": util.C(util.VMAC()),
-		"link": util.C(util.VS()).K("interfaces").V(func(i interface{}) interface{} {
-			return []string{i.(string)}
-		}),
-		"id": util.C(util.VI(0, 4094)).K("parameters").V(func(i interface{}) interface{} {
-			return map[string]interface{}{"id": i.(int)}
-		}),
+	}
+	checksLI := map[string]*util.Check{
+		"link": util.C(util.VS()),
+		"id":   util.C(util.VI(0, 4094)),
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
-		res := util.Interface{}
+		rres := &li{}
+		rresOK := util.ValidateAndMarshal(e, v, checksLI, rres)
+		res := util.NewInterface()
 		res.Type = "vlan"
-		return res, util.ValidateAndMarshal(e, v, checks, &res)
+		resOK := util.ValidateAndMarshal(e, v, checksI, &res)
+		res.Interfaces = []string{rres.L}
+		res.Parameters["id"] = rres.I
+		if nw, nwok := network()(e, "network", v); nwok {
+			if nw != nil {
+				network := nw.(*util.Network)
+				if network.Configure() {
+					res.Network = network
+				}
+			}
+		} else {
+			resOK = false
+		}
+		return res, (resOK && rresOK)
 	}
 }
 

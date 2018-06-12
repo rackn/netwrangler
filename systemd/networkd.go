@@ -35,8 +35,8 @@ func (s *Systemd) create(ctr int, intf util.Interface, e *util.Err) (io.WriteClo
 	} else {
 		lName = s.pathFor(ctr, intf.Name, "netlink")
 	}
-	nf, nErr := os.Create(path.Join(s.dest, nName))
-	lf, lErr := os.Create(path.Join(s.dest, lName))
+	nf, nErr := os.Create(path.Join(nName))
+	lf, lErr := os.Create(path.Join(lName))
 	if nErr == nil && lErr == nil {
 		return nf, lf
 	}
@@ -55,8 +55,9 @@ func (s *Systemd) create(ctr int, intf util.Interface, e *util.Err) (io.WriteClo
 
 func New(l *util.Layout) *Systemd {
 	return &Systemd{
-		Layout: l,
-		ctr:    60,
+		written: map[string]struct{}{},
+		Layout:  l,
+		ctr:     60,
 	}
 }
 
@@ -73,6 +74,9 @@ func (s *Systemd) writeParents(i util.Interface, e *util.Err, nw io.Writer) {
 			fmt.Fprintf(nw, "Bridge=%s\n", parent.Name)
 		case "bond":
 			fmt.Fprintf(nw, "Bond=%s\n", parent.Name)
+			if pv, pok := parent.Parameters["primary"]; pok && pv.(string) == i.Name {
+				fmt.Fprintf(nw, "PrimarySlave=%s\n", i.Name)
+			}
 		case "vlan":
 			fmt.Fprintf(nw, "VLAN=%s\n", parent.Name)
 		default:
@@ -221,7 +225,8 @@ Name=%s
 Kind=vlan
 
 [VLAN]
-Id=%v`, i.Name, i.Parameters["id"])
+Id=%v
+`, i.Name, i.Parameters["id"])
 }
 
 func writeRoute(r util.Route, e *util.Err, nw io.Writer) {
@@ -308,11 +313,11 @@ func writeNetwork(n *util.Network, e *util.Err, nw io.Writer) {
 		wr("Network", "Address", a)
 	}
 
-	if len(n.Gateway4.IP) > 0 {
+	if n.Gateway4 != nil {
 		wr("Network", "Gateway4", n.Gateway4)
 	}
 
-	if len(n.Gateway6.IP) > 0 {
+	if n.Gateway6 != nil {
 		wr("Network", "Gateway6", n.Gateway6)
 	}
 
@@ -374,12 +379,16 @@ func (s *Systemd) writeOut(i util.Interface, e *util.Err) {
 	fmt.Fprintf(nw, `[Match]
 Name=%s
 `, i.Name)
-	if i.Optional {
-		fmt.Fprintf(nw, `[Link]
-RequiredForOnline=no
-`)
+	if i.Optional || len(i.MacAddress) > 0 {
+		fmt.Fprintf(nw, "\n[Link]\n")
+		if i.Optional {
+			fmt.Fprintf(nw, "RequiredForOnline=no\n")
+		}
+		if len(i.MacAddress) > 0 {
+			fmt.Fprintf(nw, "MACAddress=%s\n", i.MacAddress)
+		}
 	}
-	fmt.Fprintf(nw, "[Network]\n")
+	fmt.Fprintf(nw, "\n[Network]\n")
 	s.writeParents(i, e, nw)
 	writeNetwork(i.Network, e, nw)
 	for _, subName := range i.Interfaces {
@@ -393,7 +402,8 @@ func (s *Systemd) Write(dest string) error {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tmp)
+	//defer os.RemoveAll(tmp)
+	log.Printf("networkd: tmp = %s", tmp)
 	e := &util.Err{Prefix: "systemd-networkd"}
 	s.finalDest = dest
 	s.dest = tmp

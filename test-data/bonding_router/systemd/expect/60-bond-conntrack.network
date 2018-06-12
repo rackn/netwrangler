@@ -1,0 +1,6 @@
+[Match]
+Name=bond-conntrack
+
+[Network]
+IPv6AcceptRA=true
+Address=192.168.254.2/24

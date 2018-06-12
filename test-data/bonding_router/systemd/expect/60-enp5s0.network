@@ -1,0 +1,9 @@
+[Match]
+Name=enp5s0
+
+[Link]
+RequiredForOnline=no
+
+[Network]
+Bond=bond-conntrack
+IPv6AcceptRA=true

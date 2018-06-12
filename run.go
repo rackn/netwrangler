@@ -8,6 +8,7 @@ import (
 
 	yaml "github.com/ghodss/yaml"
 	"github.com/rackn/netwrangler/netplan"
+	"github.com/rackn/netwrangler/systemd"
 	"github.com/rackn/netwrangler/util"
 )
 
@@ -52,6 +53,7 @@ func Run(args ...string) error {
 	if netErr != nil {
 		return fmt.Errorf("Error getting current network information: %v", netErr)
 	}
+	var out util.Writer
 	switch op {
 	case "gather":
 		buf, err := yaml.Marshal(phys)
@@ -86,10 +88,13 @@ func Run(args ...string) error {
 		}
 		switch outFmt {
 		case "layout":
-			err = layout.Write(dest)
+			out = layout
+		case "systemd":
+			out = systemd.New(layout)
 		default:
 			return fmt.Errorf("Unknown output format %s", outFmt)
 		}
+		err = out.Write(dest)
 		if err != nil {
 			return fmt.Errorf("Error writing '%s': %v", outFmt, err)
 		}

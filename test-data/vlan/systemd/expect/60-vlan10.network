@@ -1,0 +1,8 @@
+[Match]
+Name=vlan10
+
+[Network]
+IPv6AcceptRA=true
+Address=10.3.98.5/24
+DNS=127.0.0.1
+Domains=domain1.example.com,domain2.example.com

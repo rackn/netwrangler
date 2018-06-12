@@ -1,4 +1,7 @@
-Child2Parent: {}
+Child2Parent:
+  enp9s5:
+  - vlan10
+  - vlan15
 Interfaces:
   enp9s5:
     hwaddr: de:ad:be:ef:ca:fe
@@ -17,14 +20,35 @@ Interfaces:
         - example.com
     type: physical
   vlan10:
+    interfaces:
+    - enp9s5
     match-id: vlan10
     name: vlan10
+    network:
+      accept-ra: true
+      addresses:
+      - 10.3.98.5/24
+      nameservers:
+        addresses:
+        - 127.0.0.1
+        search:
+        - domain1.example.com
+        - domain2.example.com
+    parameters:
+      id: 10
     type: vlan
   vlan15:
+    interfaces:
+    - enp9s5
     match-id: vlan15
     name: vlan15
+    network:
+      accept-ra: true
+      addresses:
+      - 10.3.99.5/24
+    parameters:
+      id: 15
     type: vlan
 Roots:
-- enp9s5
 - vlan10
 - vlan15

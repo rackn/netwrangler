@@ -152,7 +152,10 @@ func (n *Network) SetupStaticOnly() bool {
 
 // Configure returns true if this Network should be configured.
 func (n *Network) Configure() bool {
-	return n.configure() && (n.Dhcp4 || n.Dhcp6 || len(n.Addresses) != 0)
+	if n == nil {
+		return false
+	}
+	return n.configure() && (n.AcceptRa || n.Dhcp4 || n.Dhcp6 || len(n.Addresses) != 0)
 }
 
 // SetupDHCPOnly returns true if this Network should be configured via DHCP.
@@ -214,6 +217,9 @@ type Interface struct {
 	// Read() function of the input format is responsible for setting
 	// this to a proper value.
 	CurrentHwAddr HardwareAddr `json:"hwaddr,omitempty"`
+	// MacAddress is the MAC address we want the interface to have.
+	// Not all interface type support this.
+	MacAddress HardwareAddr `json:"macaddress,omitempty"`
 	// Optional indicates to the output format that this interface is
 	// not required to be present or created for it to finish bringing
 	// up the network.  Optionality bubbles upwards from child to

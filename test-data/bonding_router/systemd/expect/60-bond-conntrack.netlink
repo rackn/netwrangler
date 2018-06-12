@@ -1,0 +1,7 @@
+[NetDev]
+Name=bond-conntrack
+Kind=bond
+
+[Bond]
+Mode=balance-rr
+MiiMonitorSec=1

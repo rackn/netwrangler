@@ -1,0 +1,7 @@
+[Match]
+Name=enp0s25
+
+[Network]
+VLAN=vlan15
+DHCP=ipv4
+IPv6AcceptRA=true

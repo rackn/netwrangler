@@ -1,0 +1,6 @@
+[Match]
+Name=bond-lan
+
+[Network]
+IPv6AcceptRA=true
+Address=192.168.93.2/24

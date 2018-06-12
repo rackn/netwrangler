@@ -1,0 +1,16 @@
+[Match]
+Name=ens3
+
+[Network]
+IPv6AcceptRA=true
+Address=192.168.3.30/24
+
+[Route]
+Destination=192.168.3.0/24
+Gateway=192.168.3.1
+Type=unicast
+Table=101
+
+[RoutingPolicyRule]
+From=192.168.3.0/24
+Table=101

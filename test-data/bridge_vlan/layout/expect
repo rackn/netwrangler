@@ -1,4 +1,6 @@
 Child2Parent:
+  enp0s25:
+  - vlan15
   vlan15:
   - br0
 Interfaces:
@@ -21,9 +23,12 @@ Interfaces:
       dhcp4: true
     type: physical
   vlan15:
+    interfaces:
+    - enp0s25
     match-id: vlan15
     name: vlan15
+    parameters:
+      id: 15
     type: vlan
 Roots:
 - br0
-- enp0s25

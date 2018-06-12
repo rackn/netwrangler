@@ -1,0 +1,12 @@
+[Match]
+Name=enp9s5
+
+[Network]
+VLAN=vlan10
+VLAN=vlan15
+IPv6AcceptRA=true
+Address=10.3.0.5/23
+Gateway4=10.3.0.1
+DNS=8.8.8.8
+DNS=8.8.4.4
+Domains=example.com

@@ -1,0 +1,6 @@
+[Match]
+Name=enp2s0
+
+[Network]
+Bond=bond-lan
+IPv6AcceptRA=true

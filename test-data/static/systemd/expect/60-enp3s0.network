@@ -1,0 +1,10 @@
+[Match]
+Name=enp3s0
+
+[Network]
+IPv6AcceptRA=true
+Address=10.10.10.2/24
+Gateway4=10.10.10.1
+DNS=10.10.10.1
+DNS=1.1.1.1
+Domains=mydomain,otherdomain
