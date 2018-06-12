@@ -1,0 +1,8 @@
+hash: 9ae488128c25106dd98310edcf22242bd49e667ef776ffab62f9f549f8272b0e
+updated: 2018-06-12T14:40:11.597448844-05:00
+imports:
+- name: github.com/ghodss/yaml
+  version: e9ed3c6dfb39bb1a32197cb10d527906fe4da4b6
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []

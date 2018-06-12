@@ -1,0 +1,3 @@
+package: github.com/rackn/netwrangler
+import:
+- package: github.com/ghodss/yaml
