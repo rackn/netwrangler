@@ -402,8 +402,7 @@ func (s *Systemd) Write(dest string) error {
 	if err != nil {
 		return err
 	}
-	//defer os.RemoveAll(tmp)
-	log.Printf("networkd: tmp = %s", tmp)
+	defer os.RemoveAll(tmp)
 	e := &util.Err{Prefix: "systemd-networkd"}
 	s.finalDest = dest
 	s.dest = tmp
