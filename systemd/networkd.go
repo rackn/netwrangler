@@ -33,7 +33,7 @@ func (s *Systemd) create(ctr int, intf util.Interface, e *util.Err) (io.WriteClo
 	if intf.Type == "physical" {
 		lName = s.pathFor(ctr, intf.Name, "link")
 	} else {
-		lName = s.pathFor(ctr, intf.Name, "netlink")
+		lName = s.pathFor(ctr, intf.Name, "netdev")
 	}
 	nf, nErr := os.Create(path.Join(nName))
 	lf, lErr := os.Create(path.Join(lName))
