@@ -249,7 +249,6 @@ func (i *Interface) validate(l *Layout) error {
 		if len(i.Interfaces) > 0 {
 			e.Errorf("%s:%s must not refer to sub interfaces %v", i.Type, i.Name, i.Interfaces)
 		}
-		l.Roots = append(l.Roots, i.Name)
 		return e.OrNil()
 	}
 	if i.Network != nil {
@@ -328,9 +327,7 @@ type Layout struct {
 	// Child2Parent records the topological order in which interfaces
 	// must be created and/or brought up.
 	Child2Parent map[string][]string
-	// Roots contains the names of interfaces that must be configured
-	// first.  These are generally physical interfaces and virtual
-	// interfaces that can be created as standalone interfaces.
+	// Roots contains the tops of the network configuration.
 	Roots []string
 }
 
@@ -403,7 +400,6 @@ func (l *Layout) cyclic(intf string, working []string, clean map[string]struct{}
 // implemntation of its Read() method.
 func (l *Layout) Validate() error {
 	e := &Err{Prefix: "layout"}
-	l.Roots = []string{}
 	l.Child2Parent = map[string][]string{}
 	members := []string{}
 	for k := range l.Interfaces {
@@ -419,6 +415,9 @@ func (l *Layout) Validate() error {
 	}
 	cleanInterfaces := map[string]struct{}{}
 	for k := range l.Interfaces {
+		if _, ok := l.Child2Parent[k]; !ok {
+			l.Roots = append(l.Roots, k)
+		}
 		l.cyclic(k, []string{}, cleanInterfaces, e)
 	}
 	sort.Strings(l.Roots)

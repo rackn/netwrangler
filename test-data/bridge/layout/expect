@@ -17,4 +17,4 @@ Interfaces:
     name: enp3s0
     type: physical
 Roots:
-- enp3s0
+- br0

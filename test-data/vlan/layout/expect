@@ -26,3 +26,5 @@ Interfaces:
     type: vlan
 Roots:
 - enp9s5
+- vlan10
+- vlan15

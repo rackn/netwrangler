@@ -25,4 +25,5 @@ Interfaces:
     name: vlan15
     type: vlan
 Roots:
+- br0
 - enp0s25

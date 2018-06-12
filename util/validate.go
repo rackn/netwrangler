@@ -31,9 +31,9 @@ func ValidateBool(e *Err, k string, v interface{}) (res, valid bool) {
 		return val, true
 	case string:
 		switch val {
-		case "0", "f", "false", "off":
+		case "0", "f", "false", "off", "no":
 			return false, true
-		case "1", "t", "true", "on":
+		case "1", "t", "true", "on", "yes":
 			return true, true
 		}
 	}
@@ -151,10 +151,13 @@ type Check struct {
 // value, and whether or not the value should be used.  If v is not valid, an informative error
 // will be added to e
 func (c *Check) Validate(e *Err, k string, v interface{}) (interface{}, bool) {
+	if c.c == nil {
+		return c.c
+	}
 	return c.c(e, k, v)
 }
 
-func (c *Check) keyName(n string) string {
+func (c *Check) Key(n string) string {
 	if c.k == "" {
 		return n
 	}
@@ -195,6 +198,13 @@ func C(checker Validator) *Check {
 	return &Check{c: checker}
 }
 
+// X returns a new empty Checker.  It is useful on the output side where
+// the input data is known to be valid, but you need to massage things for
+// into the proper format for whatever output backend you are using.
+func X() *Check {
+	return &Check{}
+}
+
 // ValidateAndMarshal checks that m is valid according to checks
 // (filling in any default values along the way), and if it is
 // marshals the checked values in to val.
@@ -210,7 +220,7 @@ func ValidateAndMarshal(e *Err, vals interface{}, checks map[string]*Check, val 
 		v, found := m[key]
 		if !found {
 			if check.d != nil {
-				res[check.keyName(key)] = check.d
+				res[check.Key(key)] = check.d
 			}
 			continue
 		}
@@ -222,7 +232,7 @@ func ValidateAndMarshal(e *Err, vals interface{}, checks map[string]*Check, val 
 		if check.v != nil {
 			nv = check.v(nv)
 		}
-		res[check.keyName(key)] = nv
+		res[check.Key(key)] = nv
 	}
 	if resOK {
 		err := Remarshal(res, val)
