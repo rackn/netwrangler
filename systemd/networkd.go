@@ -15,6 +15,9 @@ import (
 	"github.com/rackn/netwrangler/util"
 )
 
+// Systemd holds internal information needed to write out
+// the appropriate .network, .netdev, and .link files
+// that can be used to instantiate a network layout.
 type Systemd struct {
 	*util.Layout
 	written         map[string]struct{}
@@ -53,6 +56,7 @@ func (s *Systemd) create(ctr int, intf util.Interface, e *util.Err) (io.WriteClo
 	return nil, nil
 }
 
+// New returns a new Systemd for l.
 func New(l *util.Layout) *Systemd {
 	return &Systemd{
 		written: map[string]struct{}{},
@@ -397,6 +401,11 @@ Name=%s
 	}
 }
 
+// Write implements the util.Writer interface.  For Systemd, dest must
+// refer to a directory where systemd network config files will
+// reside.  Internally, Write saves everything to a temp directory
+// first, and only if no errors occured replaces the config in dest
+// with the freshyl rendered config.
 func (s *Systemd) Write(dest string) error {
 	tmp, err := ioutil.TempDir("", "netwrangler-")
 	if err != nil {
