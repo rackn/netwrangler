@@ -1,0 +1,12 @@
+Child2Parent: {}
+Interfaces:
+  enp3s0:
+    hwaddr: "52:54:01:23:00:03"
+    match-id: enp3s0
+    name: enp3s0
+    network:
+      accept-ra: true
+      dhcp4: true
+    type: physical
+Roots:
+- enp3s0

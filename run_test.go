@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	yaml "github.com/ghodss/yaml"
@@ -91,6 +92,9 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 		"-src", in+".yaml",
 		"-out", out,
 		"-dest", actualOut)
+	if strings.HasSuffix(loc, "-bindMacs") {
+		args = append(args, "-bindMacs")
+	}
 	t.Logf("Running with args %v", args)
 	if err := Run(args...); err != nil {
 		if !wantErr {

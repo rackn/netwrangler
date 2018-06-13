@@ -323,6 +323,7 @@ func (i *Interface) validate(l *Layout) error {
 // Layout is the intermediate data format that netwrangler uses as an
 // intermediate step between input formats and output formats.
 type Layout struct {
+	bindMacs bool
 	// Interfaces contains all the Interface definitions that are
 	// required to create this Layout.  It must be complete -- the
 	// Interfaces fields in each individual Interface in this map must
@@ -354,6 +355,10 @@ func (l *Layout) Read(src string) (*Layout, error) {
 		return nil, err
 	}
 	return l, yaml.Unmarshal(buf, l)
+}
+
+func (l *Layout) BindMacs() {
+	l.bindMacs = true
 }
 
 // Write satisfies the Writer interface, although for Layout it is

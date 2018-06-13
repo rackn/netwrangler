@@ -20,9 +20,14 @@ import (
 // that can be used to instantiate a network layout.
 type Systemd struct {
 	*util.Layout
+	bindMacs        bool
 	written         map[string]struct{}
 	ctr             int
 	dest, finalDest string
+}
+
+func (s *Systemd) BindMacs() {
+	s.bindMacs = true
 }
 
 func (s *Systemd) pathFor(ctr int, name, ext string) string {
@@ -380,9 +385,12 @@ func (s *Systemd) writeOut(i util.Interface, e *util.Err) {
 		e.Errorf("Cannot write interface %s:%s", i.Type, i.Name)
 	}
 	// Network file
-	fmt.Fprintf(nw, `[Match]
-Name=%s
-`, i.Name)
+	fmt.Fprintf(nw, "[Match]\n")
+	if s.bindMacs && i.Type == "physical" {
+		fmt.Fprintf(nw, "MACAddress=%s\n", i.CurrentHwAddr)
+	} else {
+		fmt.Fprintf(nw, "Name=%s\n", i.Name)
+	}
 	if i.Optional || len(i.MacAddress) > 0 {
 		fmt.Fprintf(nw, "\n[Link]\n")
 		if i.Optional {

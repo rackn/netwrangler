@@ -30,6 +30,7 @@ type Reader interface {
 // Writer is implemented by all target formats that netwrangler understands
 type Writer interface {
 	Write(string) error
+	BindMacs()
 }
 
 // IP is an alias of net.IPNet that we use to enable easy marshalling

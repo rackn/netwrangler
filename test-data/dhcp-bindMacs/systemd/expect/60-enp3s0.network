@@ -1,0 +1,6 @@
+[Match]
+MACAddress=52:54:01:23:00:03
+
+[Network]
+DHCP=ipv4
+IPv6AcceptRA=true
