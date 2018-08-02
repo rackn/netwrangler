@@ -35,7 +35,7 @@ network:
       parameters:
         mode: active-backup
         mii-monitor-interval: 1
-        gratuitious-arp: 5
+        gratuitous-arp: 5
     bond-conntrack:
       interfaces: [enp5s0, enp6s0]
       addresses: [192.168.254.2/24]

@@ -5,3 +5,4 @@ Kind=bond
 [Bond]
 Mode=active-backup
 MiiMonitorSec=1
+GratuitousARP=5

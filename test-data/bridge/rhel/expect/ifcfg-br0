@@ -1,0 +1,7 @@
+# Created by netwrangler
+DEVICE="br0"
+TYPE="Bridge"
+ONBOOT="yes"
+BOOTPROTO="dhcp"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

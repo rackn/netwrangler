@@ -1,10 +1,12 @@
 package util
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"sort"
+	"strings"
 
 	yaml "github.com/ghodss/yaml"
 )
@@ -33,6 +35,37 @@ type Route struct {
 	// Table is the table the route should be inserted into, if you want
 	// something other than the default table for the route type.
 	Table int `json:"table,omitempty"`
+}
+
+func (r Route) IPString(i Interface) string {
+	res := []string{}
+	if r.To != nil {
+		res = append(res, "to")
+		if r.Type != "" {
+			res = append(res, r.Type)
+		}
+		res = append(res, r.To.String())
+	}
+	if r.From != nil {
+		res = append(res, "src", r.From.String())
+	}
+	if r.Metric != 0 && r.Metric != 100 {
+		res = append(res, "metric", fmt.Sprintf("%d", r.Metric))
+	}
+	if r.Table != 0 && r.Table != 253 {
+		res = append(res, "table", fmt.Sprintf("%d", r.Table))
+	}
+	if r.Via != nil {
+		res = append(res, "via", r.Via.IP.String())
+	}
+	if r.OnLink {
+		res = append(res, "onlink")
+	}
+	if r.Scope != "" && r.Scope != "global" {
+		res = append(res, "scope", r.Scope)
+	}
+	res = append(res, "dev", i.Name)
+	return strings.Join(res, " ")
 }
 
 func (r *Route) validate() error {
@@ -74,6 +107,29 @@ type RoutePolicy struct {
 	TOS int `json:"type-of-service,omitempty"`
 }
 
+func (r RoutePolicy) IPString() string {
+	res := []string{}
+	if r.From != nil {
+		res = append(res, "from", r.From.String())
+	}
+	if r.To != nil {
+		res = append(res, "to", r.To.String())
+	}
+	if r.Priority != 0 {
+		res = append(res, "pref", fmt.Sprintf("%d", r.Priority))
+	}
+	if r.FWMark != 0 {
+		res = append(res, "fwmark", fmt.Sprintf("%d", r.FWMark))
+	}
+	if r.TOS != 0 {
+		res = append(res, "tos", fmt.Sprintf("%d", r.TOS))
+	}
+	if r.Table != 0 {
+		res = append(res, "table", fmt.Sprintf("%d", r.Table))
+	}
+	return strings.Join(res, " ")
+}
+
 func (r *RoutePolicy) validate() error {
 	e := &Err{Prefix: "RoutePolicy"}
 	if (r.From != nil) == (r.To != nil) {
@@ -102,26 +158,26 @@ func (n *NSInfo) validate() error {
 // Network defines the layer 3 network configuration that a specific
 // interface should have.
 type Network struct {
+	// AcceptRa signals that the interface should get an IPv6 address by
+	// autogenerating one in response to an IPv6 router advertisement
+	// packet.
 	AcceptRa bool `json:"accept-ra,omitempty"`
-	// Addresses is a list of IP addresses in CIDR format that should be
-	// assigned to this interface.  If this list is set and the DHCP
-	// flags are also set, these addresses and the DHCP addresses will
-	// be added to the interface.
 	// Dhcp4 specifies whether an IPv4 address should be solicited for
 	// this interface via DHCP.
 	Dhcp4 bool `json:"dhcp4,omitempty"`
 	// Dhcp6 specifies whether an IPv6 address should be solicited for
 	// this interface via DHCP6
 	Dhcp6 bool `json:"dhcp6,omitempty"`
-	// DHcpIdentifier specifies what should be used as a unique
+	// DhcpIdentifier specifies what should be used as a unique
 	// identifier for this interface when performing DHCP operations.
 	// If unset, a generated Client ID will be used.  THe only other
 	// valid value is 'mac' which specifies that the MAC address on the
 	// interface should be used.
 	DhcpIdentifier string `json:"dhcp-identifier,omitempty"`
-	// AcceptRa signals that the interface should get an IPv6 address by
-	// autogenerating one in response to an IPv6 router advertisement
-	// packet.
+	// Addresses is a list of IP addresses in CIDR format that should be
+	// assigned to this interface.  If this list is set and the DHCP
+	// flags are also set, these addresses and the DHCP addresses will
+	// be added to the interface.
 	Addresses []*IP `json:"addresses,omitempty"`
 	// Gateway4 is the IPv4 default gateway address that should be set
 	// for this interface.
@@ -133,7 +189,7 @@ type Network struct {
 	// should be used.
 	Nameservers *NSInfo `json:"nameservers,omitempty"`
 	// Routes defines any additional routes that should be added for
-	// this interface when it s brought up.
+	// this interface when it is brought up.
 	Routes []Route `json:"routes,omitempty"`
 	// RoutingPolicy defines additional routing policy entries that
 	// should be added when this interface is brought up.
@@ -217,8 +273,10 @@ type Interface struct {
 	// Read() function of the input format is responsible for setting
 	// this to a proper value.
 	CurrentHwAddr HardwareAddr `json:"hwaddr,omitempty"`
-	// MacAddress is the MAC address we want the interface to have.
-	// Not all interface type support this.
+	// MacAddress is the MAC address we want the interface to have.  Not
+	// all interface type support this.  Specifically, we do not yet
+	// support changing the mac address on a physical interface that
+	// already exists.
 	MacAddress HardwareAddr `json:"macaddress,omitempty"`
 	// Optional indicates to the output format that this interface is
 	// not required to be present or created for it to finish bringing
@@ -226,7 +284,8 @@ type Interface struct {
 	// parent.
 	Optional bool `json:"optional,omitempty"`
 	// Interfaces holds the names of other Interfaces that the current
-	// Interface will build upon.
+	// Interface will build upon.  Not all interface types build on
+	// other interfaces.
 	Interfaces []string `json:"interfaces,omitempty"`
 	// Parameters contains any additional parameters that may be needed
 	// to configure this interface.  Different interface Types have
@@ -323,7 +382,6 @@ func (i *Interface) validate(l *Layout) error {
 // Layout is the intermediate data format that netwrangler uses as an
 // intermediate step between input formats and output formats.
 type Layout struct {
-	bindMacs bool
 	// Interfaces contains all the Interface definitions that are
 	// required to create this Layout.  It must be complete -- the
 	// Interfaces fields in each individual Interface in this map must
@@ -357,9 +415,9 @@ func (l *Layout) Read(src string) (*Layout, error) {
 	return l, yaml.Unmarshal(buf, l)
 }
 
-func (l *Layout) BindMacs() {
-	l.bindMacs = true
-}
+// BindMacs satisfies the Writer interface, although it is a noop for
+// Layout.
+func (l *Layout) BindMacs() {}
 
 // Write satisfies the Writer interface, although for Layout it is
 // primarily used for debugging and unit test purposes.
@@ -408,7 +466,8 @@ func (l *Layout) cyclic(intf string, working []string, clean map[string]struct{}
 
 // Validate validates that the Layout describes a sane network
 // configuration.  It must be called by any Reader in the
-// implemntation of its Read() method.
+// implemntation of its Read() method.  When Validate is finished and
+// no errors were found, l.Roots and l.Child2Parent will be populated.
 func (l *Layout) Validate() error {
 	e := &Err{Prefix: "layout"}
 	l.Child2Parent = map[string][]string{}
@@ -423,6 +482,16 @@ func (l *Layout) Validate() error {
 	}
 	if !e.Empty() {
 		return e
+	}
+	for _, k := range members {
+		v := l.Interfaces[k]
+		if (v.Type == "bridge" || v.Type == "bond") && len(v.Interfaces) > 0 {
+			for idx := range v.Interfaces {
+				child := l.Interfaces[v.Interfaces[idx]]
+				child.Network = nil
+				l.Interfaces[child.Name] = child
+			}
+		}
 	}
 	cleanInterfaces := map[string]struct{}{}
 	for k := range l.Interfaces {

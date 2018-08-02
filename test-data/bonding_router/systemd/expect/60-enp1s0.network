@@ -3,4 +3,3 @@ Name=enp1s0
 
 [Network]
 Bond=bond-wan
-IPv6AcceptRA=true

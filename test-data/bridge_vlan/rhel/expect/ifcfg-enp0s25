@@ -1,0 +1,7 @@
+# Created by netwrangler
+DEVICE="enp0s25"
+TYPE="Ethernet"
+ONBOOT="yes"
+BOOTPROTO="dhcp"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

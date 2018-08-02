@@ -112,7 +112,7 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 func rt(t *testing.T, loc string, wantErr bool) {
 	t.Helper()
 	for _, in := range []string{"netplan"} {
-		for _, out := range []string{"layout", "systemd"} {
+		for _, out := range []string{"layout", "systemd", "rhel"} {
 			testRun(t, loc, in, out, wantErr)
 		}
 	}

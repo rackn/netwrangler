@@ -6,4 +6,3 @@ RequiredForOnline=no
 
 [Network]
 Bond=bond-wan
-IPv6AcceptRA=true

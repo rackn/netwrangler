@@ -1,0 +1,13 @@
+# Created by netwrangler
+DEVICE="eno1"
+TYPE="Ethernet"
+ONBOOT="yes"
+BOOTPROTO="none"
+DNS1="8.8.8.8"
+DNS2="8.8.4.4"
+IPADDR0="10.0.0.10"
+NETMASK0="255.255.255.0"
+IPADDR1="11.0.0.11"
+NETMASK1="255.255.255.0"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

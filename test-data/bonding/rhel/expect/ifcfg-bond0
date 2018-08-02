@@ -1,0 +1,7 @@
+# Created by netwrangler
+DEVICE="bond0"
+BONDING_OPTS="mode=active-backup primary=enp3s0"
+ONBOOT="yes"
+BOOTPROTO="dhcp"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

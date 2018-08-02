@@ -1,0 +1,12 @@
+# Created by netwrangler
+DEVICE="vlan10"
+VLAN="yes"
+VID="10"
+PHYSDEV="enp9s5"
+ONBOOT="yes"
+BOOTPROTO="none"
+DNS1="127.0.0.1"
+IPADDR0="10.3.98.5"
+NETMASK0="255.255.255.0"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

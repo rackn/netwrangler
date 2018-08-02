@@ -9,6 +9,7 @@ import (
 
 	yaml "github.com/ghodss/yaml"
 	"github.com/rackn/netwrangler/netplan"
+	"github.com/rackn/netwrangler/rhel"
 	"github.com/rackn/netwrangler/systemd"
 	"github.com/rackn/netwrangler/util"
 )
@@ -17,7 +18,7 @@ var (
 	phys        []util.Phy
 	claimedPhys map[string]util.Interface
 	inFormats   = []string{"netplan", "layout"}
-	outFormats  = []string{"systemd", "layout"}
+	outFormats  = []string{"systemd", "layout", "rhel"}
 )
 
 func Run(args ...string) error {
@@ -98,6 +99,8 @@ func Run(args ...string) error {
 			out = layout
 		case "systemd":
 			out = systemd.New(layout)
+		case "rhel":
+			out = rhel.New(layout)
 		default:
 			return fmt.Errorf("Unknown output format %s", outFmt)
 		}

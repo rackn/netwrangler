@@ -1,0 +1,9 @@
+# Created by netwrangler
+DEVICE="bond-conntrack"
+BONDING_OPTS="miimon=1 mode=balance-rr"
+ONBOOT="yes"
+BOOTPROTO="none"
+IPADDR0="192.168.254.2"
+NETMASK0="255.255.255.0"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

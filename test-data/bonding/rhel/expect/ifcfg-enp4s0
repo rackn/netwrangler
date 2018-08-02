@@ -1,0 +1,6 @@
+# Created by netwrangler
+DEVICE="enp4s0"
+TYPE="Ethernet"
+MASTER="bond0"
+SLAVE="yes"
+ONBOOT="yes"

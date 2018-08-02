@@ -1,0 +1,6 @@
+# Created by netwrangler
+DEVICE="enp6s0"
+TYPE="Ethernet"
+MASTER="bond-conntrack"
+SLAVE="yes"
+ONBOOT="no"

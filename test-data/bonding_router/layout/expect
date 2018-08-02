@@ -58,7 +58,7 @@ Interfaces:
         search:
         - local
     parameters:
-      gratuitious-arp: 5
+      gratuitous-arp: 5
       mii-monitor-interval: 1
       mode: active-backup
     type: bond
@@ -66,46 +66,34 @@ Interfaces:
     hwaddr: "52:54:01:23:00:01"
     match-id: enp1s0
     name: enp1s0
-    network:
-      accept-ra: true
     type: physical
   enp2s0:
     hwaddr: "52:54:01:23:00:02"
     match-id: enp2s0
     name: enp2s0
-    network:
-      accept-ra: true
     type: physical
   enp3s0:
     hwaddr: "52:54:01:23:00:03"
     match-id: enp3s0
     name: enp3s0
-    network:
-      accept-ra: true
     optional: true
     type: physical
   enp4s0:
     hwaddr: "52:54:01:23:00:04"
     match-id: enp4s0
     name: enp4s0
-    network:
-      accept-ra: true
     optional: true
     type: physical
   enp5s0:
     hwaddr: "52:54:01:23:00:05"
     match-id: enp5s0
     name: enp5s0
-    network:
-      accept-ra: true
     optional: true
     type: physical
   enp6s0:
     hwaddr: "52:54:01:23:00:06"
     match-id: enp6s0
     name: enp6s0
-    network:
-      accept-ra: true
     optional: true
     type: physical
 Roots:

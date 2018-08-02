@@ -1,0 +1,12 @@
+# Created by netwrangler
+DEVICE="bond-wan"
+BONDING_OPTS="miimon=1 mode=active-backup num_grat_arp=5"
+ONBOOT="yes"
+BOOTPROTO="none"
+DNS1="8.8.8.8"
+DNS2="8.8.4.4"
+IPADDR0="192.168.1.252"
+NETMASK0="255.255.255.0"
+GATEWAY="192.168.1.1"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

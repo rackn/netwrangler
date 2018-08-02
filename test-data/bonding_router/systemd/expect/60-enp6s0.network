@@ -6,4 +6,3 @@ RequiredForOnline=no
 
 [Network]
 Bond=bond-conntrack
-IPv6AcceptRA=true

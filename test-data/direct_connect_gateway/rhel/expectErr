@@ -1,0 +1,6 @@
+Error reading 'netplan': netplan:
+cannot validate format []interface {}
+[]interface {} not castable to an ethernet interface
+cannot validate format []interface {}
+[]interface {} not castable to an ethernet interface
+

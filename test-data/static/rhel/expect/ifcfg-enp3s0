@@ -1,0 +1,12 @@
+# Created by netwrangler
+DEVICE="enp3s0"
+TYPE="Ethernet"
+ONBOOT="yes"
+BOOTPROTO="none"
+DNS1="10.10.10.1"
+DNS2="1.1.1.1"
+IPADDR0="10.10.10.2"
+NETMASK0="255.255.255.0"
+GATEWAY="10.10.10.1"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

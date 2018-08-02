@@ -1,0 +1,6 @@
+# Created by netwrangler
+DEVICE="enp1s0"
+TYPE="Ethernet"
+MASTER="bond-wan"
+SLAVE="yes"
+ONBOOT="yes"

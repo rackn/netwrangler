@@ -1,0 +1,9 @@
+# Created by netwrangler
+DEVICE="ens3"
+TYPE="Ethernet"
+ONBOOT="yes"
+BOOTPROTO="none"
+IPADDR0="192.168.3.30"
+NETMASK0="255.255.255.0"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
