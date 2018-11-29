@@ -28,7 +28,9 @@ type Phy struct {
 func MatchPhys(m Match, tmpl Interface, phys []Phy) []Interface {
 	res := []Interface{}
 	for _, phyInt := range phys {
-		if m.Name != "" && !Glob2RE(m.Name).MatchString(phyInt.Name) {
+		if m.Name != "" &&
+			!Glob2RE(m.Name).MatchString(phyInt.Name) &&
+			!Glob2RE(m.Name).MatchString(phyInt.StableName) {
 			continue
 		}
 		if m.Driver != "" && m.Driver != phyInt.Driver {
