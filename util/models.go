@@ -24,7 +24,7 @@ func Glob2RE(s string) *regexp.Regexp {
 // Reader is implemented by all source formats that netwrangler
 // understands
 type Reader interface {
-	Read(string) (*Layout, error)
+	Read(string, []Phy) (*Layout, error)
 }
 
 // Writer is implemented by all target formats that netwrangler understands

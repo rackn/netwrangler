@@ -26,6 +26,8 @@ type Systemd struct {
 	dest, finalDest string
 }
 
+// BindMacs forces all Match sections for physical interfaces to match
+// by MAC address.
 func (s *Systemd) BindMacs() {
 	s.bindMacs = true
 }

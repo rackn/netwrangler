@@ -37,6 +37,8 @@ type Route struct {
 	Table int `json:"table,omitempty"`
 }
 
+// IPString translates a Route into the appropriate ip command
+// arguments to add said route to a running system.
 func (r Route) IPString(i Interface) string {
 	res := []string{}
 	if r.To != nil {
@@ -107,6 +109,8 @@ type RoutePolicy struct {
 	TOS int `json:"type-of-service,omitempty"`
 }
 
+// IPString translates a RoutePolicy into the appropriate ip command
+// arguments to add said routing policy to a running system.
 func (r RoutePolicy) IPString() string {
 	res := []string{}
 	if r.From != nil {
@@ -398,7 +402,7 @@ type Layout struct {
 
 // Read() satisifies the Reader interface, although for the internal
 // Layout it is primarily used for debugging purposes.
-func (l *Layout) Read(src string) (*Layout, error) {
+func (l *Layout) Read(src string, phys []Phy) (*Layout, error) {
 	in := os.Stdin
 	if src != "" {
 		i, e := os.Open(src)

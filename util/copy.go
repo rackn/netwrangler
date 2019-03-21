@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 )
 
+// Copy all of the files in one directory to another
 func Copy(src, target string, e *Err) {
 	names, err := filepath.Glob(path.Join(src, "*"))
 	if err != nil {

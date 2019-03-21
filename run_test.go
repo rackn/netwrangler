@@ -58,15 +58,23 @@ func cmpOut(t *testing.T, actual, expect string) {
 
 func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 	//t.Helper()
+	var (
+		phys []util.Phy
+		err  error
+	)
 	pwd, _ := os.Getwd()
-	if err := os.Chdir(loc); err != nil {
+	if err = os.Chdir(loc); err != nil {
 		t.Errorf("Failed to change dir to %s: %v", loc, err)
 		return
 	}
 	defer os.Chdir(pwd)
 	args := []string{"test"}
 	if st, ok := os.Stat("phys.yaml"); ok == nil && st.Mode().IsRegular() {
-		args = append(args, "-phys", path.Join(loc, "phys.yaml"))
+		phys, err = GatherPhysFromFile("phys.yaml")
+		if err != nil {
+			t.Error(err)
+			return
+		}
 	} else {
 		phys = testPhys
 	}
@@ -78,7 +86,6 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 		os.RemoveAll("wantErr")
 	}
 	os.RemoveAll("untouched")
-	claimedPhys = map[string]util.Interface{}
 	actualOut := path.Join(out, "actual")
 	expectOut := path.Join(out, "expect")
 	actualErr := path.Join(out, "actualErr")
@@ -96,7 +103,7 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 		args = append(args, "-bindMacs")
 	}
 	t.Logf("Running with args %v", args)
-	if err := Run(args...); err != nil {
+	if err = Compile(phys, in, out, in+".yaml", actualOut, strings.HasSuffix(loc, "-bindMacs")); err != nil {
 		if !wantErr {
 			t.Errorf("ERROR: loc %s: Unexpected error!\n%v", loc, err)
 		}
@@ -112,7 +119,7 @@ func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 func rt(t *testing.T, loc string, wantErr bool) {
 	t.Helper()
 	for _, in := range []string{"netplan"} {
-		for _, out := range []string{"layout", "systemd", "rhel"} {
+		for _, out := range []string{"internal", "systemd", "rhel"} {
 			testRun(t, loc, in, out, wantErr)
 		}
 	}
