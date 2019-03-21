@@ -1,7 +1,8 @@
 # NetWrangler
 
 Table of Contents
-* [Introduction](#Introduction)
+* [Introduction](#introduction)
+* [Using NetWrangler](#using-netwrangler)
 * [Building NetWrangler](#building-netwrangler)
 * [Cross Compiling](#cross-compiling)
 * [Contributing](#contributing)
@@ -32,6 +33,38 @@ differences are:
   seem like a good idea if you don;t care about dynamic interface
   reconfiguration.
 
+## Using NetWrangler
+
+There are extensive example configuration files for various network
+configuration implementations which can be found in the
+[test-data](https://github.com/rackn/netwrangler/tree/master/test-data)
+directory.
+
+For basic command usage, use the `--help` switch to the compiled
+binary for more details.  Example usage (not guaranteed to be up
+to date with current usage output):
+
+```shell
+$ netwrangler --help
+Usage of cmd/netwrangler:
+  -bindMacs
+    	Whether to write configs that force matching physical devices on MAC address
+  -dest string
+    	Location to write output to.  Defaults to stdout.
+  -in string
+    	Format to expect for input. Options: netplan, internal (default "netplan")
+  -op string
+    	Operation to perform.
+    	"gather" gathers information about the physical nics on the system in a form that can be used later with the -phys option
+    	"compile" translates the -in formatted network spec from -src to -out formatted data at -dest
+  -out string
+    	Format to render input to.  Options: systemd, rhel, internal (default "systemd")
+  -phys string
+    	File to read to gather current physical nics.  Defaults to reading them from the kernel.
+  -src string
+    	Location to get input from.  Defaults to stdin.
+2019/03/21 10:34:16 flag: help requested
+```
 
 ## Building NetWrangler
 
