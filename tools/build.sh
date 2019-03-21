@@ -6,4 +6,4 @@ if ! which glide &>/dev/null; then
     go get -v github.com/Masterminds/glide
 fi
 glide i
-(cd cmd; go build -o "$GOPATH/bin/netwrangler")
+(cd cmd; go build -o netwrangler)
