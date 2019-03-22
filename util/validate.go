@@ -43,25 +43,25 @@ func ValidateBool(e *Err, k string, v interface{}) (res, valid bool) {
 
 // ValidateInt will attempt to translate v into an int, and make sure
 // it is between min and max.
-func ValidateInt(e *Err, k string, v interface{}, min, max int) (res int, valid bool) {
+func ValidateInt(e *Err, k string, v interface{}, min, max int64) (res int64, valid bool) {
 	switch vv := v.(type) {
-	case int:
-		res = vv
-	case uint:
-		res = int(vv)
 	case int64:
-		res = int(vv)
+		res = vv
 	case uint64:
-		res = int(vv)
+		res = int64(vv)
+	case int:
+		res = int64(vv)
+	case uint:
+		res = int64(vv)
 	case float64:
-		res = int(vv)
+		res = int64(vv)
 	case string:
 		vvs, err := strconv.ParseInt(vv, 0, 64)
 		if err != nil {
 			e.Errorf("%s: Cannot cast %v to an int: %v", k, v, err)
 			return
 		}
-		res = int(vvs)
+		res = vvs
 	default:
 		e.Errorf("%s: Cannot cast %T(%v) to an %T(%v)", k, v, v, vv, vv)
 		return
@@ -253,7 +253,7 @@ func VB() Validator {
 
 // VI returns a Validator that will validate int-ish values that must
 // be in a certian range.
-func VI(min, max int) Validator {
+func VI(min, max int64) Validator {
 	return func(e *Err, k string, v interface{}) (interface{}, bool) {
 		return ValidateInt(e, k, v, min, max)
 	}
