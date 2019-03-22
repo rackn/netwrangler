@@ -1,5 +1,7 @@
 # NetWrangler
 
+![Cloudia the NetWrangler](images/netwrangler.png)
+
 Table of Contents
 * [Introduction](#Introduction)
 * [Building NetWrangler](#building-netwrangler)
