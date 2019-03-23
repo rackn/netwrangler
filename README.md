@@ -136,4 +136,4 @@ Please refer to it for full details.
 
 ## License
 
-NetWrangler is [Apacke License 2.0](https://github.com/rackn/netwrangler/blob/master/LICENSE).
+NetWrangler is [Apache License 2.0](https://github.com/rackn/netwrangler/blob/master/LICENSE).
