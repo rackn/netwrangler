@@ -120,6 +120,10 @@ excellent [post by Julian Ponge](https://julien.ponge.org/blog/in-defense-of-con
 ).  For backup reference, we have copied this post to a
 [GIST](https://gist.github.com/sygibson/6b485dabe31be5c8cf32d9ffd321908c).
 
+You may sign the CLA in advance of submitting changes by visiting:
+
+  [https://cla-assistant.io/rackn/netwrangler](https://cla-assistant.io/rackn/netwrangler}
+
 When you create your first Pull Request, you will be required to sign
 the CLA if you have not yet done so.
 
