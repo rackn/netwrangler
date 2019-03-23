@@ -14,8 +14,8 @@ Table of Contents
 
 ## Introduction
 NetWrangler is a one-shot network interface configuration utility that
-is mostly compatible with https://netplan.io configuration files.  Key
-differences are:
+is mostly compatible with [https://netplan.io](https://netplan.io)
+configuration files.  Key differences are:
 
 * It only supports systemd-networkd and old-style Redhat network
   configurations as output formats.  Debian style is a planned on, and
