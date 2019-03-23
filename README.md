@@ -111,8 +111,20 @@ Example of compiling for Linux 64bit, when on macOS:
 
 We encourage contributions to help expand and enhance the functionality
 of the NetWrangler project.  We operate in a standard "Pull Request" (PR)
-git workflow model.  If you have some changes you'd like to make, we
-ask that you drop by and chat with us via Slack, sign up at:
+git workflow model.
+
+We also require that contributors sign a Contributor's License Agreement.
+We believe that this helps protect both you the contributor, and the
+project at large.  You can find our philosophy on this summarized by the
+excellent [post by Julian Ponge](https://julien.ponge.org/blog/in-defense-of-contributor-license-agreements/
+).  For backup reference, we have copied this post to a
+[GIST](https://gist.github.com/sygibson/6b485dabe31be5c8cf32d9ffd321908c).
+
+When you create your first Pull Request, you will be required to sign
+the CLA if you have not yet done so.
+
+If you have some changes you'd like to make, we ask that you drop by and
+chat with us via Slack, sign up at:
 
 https://rackn.com/support/slack/
 
