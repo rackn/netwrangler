@@ -1,6 +1,6 @@
 # NetWrangler
 
-![Cloudia the NetWrangler](images/netwrangler.png)
+![Cloudia the NetWrangler](images/netwrangler-cloudia-cowboy_hat-text_logo.png)
 
 Table of Contents
 * [Introduction](#introduction)
