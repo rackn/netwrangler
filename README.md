@@ -122,7 +122,7 @@ excellent [post by Julian Ponge](https://julien.ponge.org/blog/in-defense-of-con
 
 You may sign the CLA in advance of submitting changes by visiting:
 
-  [https://cla-assistant.io/rackn/netwrangler](https://cla-assistant.io/rackn/netwrangler}
+  [https://cla-assistant.io/rackn/netwrangler](https://cla-assistant.io/rackn/netwrangler)
 
 When you create your first Pull Request, you will be required to sign
 the CLA if you have not yet done so.
