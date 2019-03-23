@@ -72,7 +72,7 @@ Usage of cmd/netwrangler:
 
 NetWrangler is a Go Lang project, and is simple to build.  Please
 install Go version 1.10 or newer (older versions may work but have
-not been tested).  See https://golang.org/doc/install
+not been tested).  See [https://golang.org/doc/install[(https://golang.org/doc/install)
 
 In the future, compiled builds may be provided.
 
@@ -117,12 +117,12 @@ We also require that contributors sign a Contributor's License Agreement.
 We believe that this helps protect both you the contributor, and the
 project at large.  You can find our philosophy on this summarized by the
 excellent [post by Julian Ponge](https://julien.ponge.org/blog/in-defense-of-contributor-license-agreements/
-).  For backup reference, we have copied this post to a
-[GIST](https://gist.github.com/sygibson/6b485dabe31be5c8cf32d9ffd321908c).
+).  For reference, we have copied this post to a
+[GIST backup](https://gist.githubusercontent.com/sygibson/6b485dabe31be5c8cf32d9ffd321908c/raw/46de6d2dca0dbe97fc55042fb2f7e33f1a799e6f/why-cla.txt).
 
 You may sign the CLA in advance of submitting changes by visiting:
 
-  [https://cla-assistant.io/rackn/netwrangler](https://cla-assistant.io/rackn/netwrangler)
+* [https://cla-assistant.io/rackn/netwrangler](https://cla-assistant.io/rackn/netwrangler)
 
 When you create your first Pull Request, you will be required to sign
 the CLA if you have not yet done so.
@@ -130,7 +130,7 @@ the CLA if you have not yet done so.
 If you have some changes you'd like to make, we ask that you drop by and
 chat with us via Slack, sign up at:
 
-https://rackn.com/support/slack/
+* [https://rackn.com/support/slack/](https://rackn.com/support/slack/)
 
 Please put "netwrangler" in the "I'm interested in" field.
 
