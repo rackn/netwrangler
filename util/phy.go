@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"net"
 
 	gnet "github.com/rackn/gohai/plugins/net"
 )
@@ -48,7 +49,7 @@ func GatherPhys() ([]gnet.Interface, error) {
 	res := []gnet.Interface{}
 
 	for _, intf := range info.Interfaces {
-		if intf.Sys.IsPhysical {
+		if intf.Sys.IsPhysical || intf.Flags&gnet.Flags(net.FlagLoopback) != 0 {
 			res = append(res, intf)
 		}
 	}
