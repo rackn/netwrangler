@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler/util"
 )
 
@@ -117,7 +118,7 @@ func s2s(sep string) func(interface{}) interface{} {
 			if len(v) > 0 {
 				res = strings.Join(v, sep)
 			}
-		case []*util.IP:
+		case []*gnet.IPNet:
 			if len(v) > 0 {
 				ips := make([]string, len(v))
 				for i := range v {

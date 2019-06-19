@@ -3,6 +3,8 @@ package util
 import (
 	"encoding/json"
 	"strconv"
+
+	gnet "github.com/rackn/gohai/plugins/net"
 )
 
 // Remarshal marshals src into a buf as JSON, then unmarshals that buf
@@ -92,8 +94,8 @@ func ValidateStrIn(e *Err, k string, v interface{}, vals ...string) (res string,
 }
 
 // ValidateMac validates that v is a hardware address
-func ValidateMac(e *Err, k string, v interface{}) (res HardwareAddr, valid bool) {
-	res, valid = v.(HardwareAddr)
+func ValidateMac(e *Err, k string, v interface{}) (res gnet.HardwareAddr, valid bool) {
+	res, valid = v.(gnet.HardwareAddr)
 	if !valid {
 		if err := Remarshal(v, &res); err != nil {
 			e.Errorf("%s: Cannot cast %v to a HardwareAddr:%v", k, v, err)
@@ -105,8 +107,8 @@ func ValidateMac(e *Err, k string, v interface{}) (res HardwareAddr, valid bool)
 }
 
 // ValidateIP validates that v is an IP address or address range in CIDR format.
-func ValidateIP(e *Err, k string, v interface{}) (res *IP, valid bool) {
-	res, valid = v.(*IP)
+func ValidateIP(e *Err, k string, v interface{}) (res *gnet.IPNet, valid bool) {
+	res, valid = v.(*gnet.IPNet)
 	if !valid {
 		if err := Remarshal(v, &res); err != nil {
 			e.Errorf("%s: Cannot cast %v to an IP: %v", k, v, err)
@@ -117,10 +119,10 @@ func ValidateIP(e *Err, k string, v interface{}) (res *IP, valid bool) {
 	return
 }
 
-// ValidateIPList validates that v can be represented as a list of *IP
+// ValidateIPList validates that v can be represented as a list of *gnet.IPNet
 // objects, and that they are all either CIDR addresses or not.
-func ValidateIPList(e *Err, k string, v interface{}, cidr bool) (res []*IP, valid bool) {
-	res, valid = v.([]*IP)
+func ValidateIPList(e *Err, k string, v interface{}, cidr bool) (res []*gnet.IPNet, valid bool) {
+	res, valid = v.([]*gnet.IPNet)
 	if !valid {
 		if err := Remarshal(v, &res); err != nil {
 			valid = false
@@ -322,7 +324,7 @@ func VIPS(cidr bool) Validator {
 }
 
 // VMAC returns a Validator that will validate that the passed object
-// represents a HardwareAddr
+// represents a gnet.HardwareAddr
 func VMAC() Validator {
 	return func(e *Err, k string, v interface{}) (interface{}, bool) {
 		return ValidateMac(e, k, v)

@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 
+	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler/util"
 )
 
@@ -134,7 +135,7 @@ func (r *Rhel) writeOut(i util.Interface, e *util.Err) {
 	if !nw.Configure() {
 		return
 	}
-	v4addrs, v6addrs := []*util.IP{}, []*util.IP{}
+	v4addrs, v6addrs := []*gnet.IPNet{}, []*gnet.IPNet{}
 	if len(nw.Addresses) > 0 {
 		for _, addr := range nw.Addresses {
 			if addr.IP.To4() != nil {
@@ -190,7 +191,7 @@ func (r *Rhel) writeOut(i util.Interface, e *util.Err) {
 		}
 		nw.Routes = append(nw.Routes, util.Route{
 			Via: nw.Gateway6,
-			To: &util.IP{
+			To: &gnet.IPNet{
 				IP:   net.IPv6zero,
 				Mask: net.IPMask(net.IPv6zero),
 			},
