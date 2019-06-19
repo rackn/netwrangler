@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
+	yaml "github.com/ghodss/yaml"
+	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler"
-	"github.com/rackn/netwrangler/util"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -55,7 +55,7 @@ func main() {
 		}
 	case "compile":
 		var (
-			phys []util.Phy
+			phys []gnet.Interface
 			err  error
 		)
 		if physIn == "" {

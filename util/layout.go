@@ -9,17 +9,18 @@ import (
 	"strings"
 
 	yaml "github.com/ghodss/yaml"
+	gnet "github.com/rackn/gohai/plugins/net"
 )
 
 // Route defines a static route to be used if setting up policy routes.
 type Route struct {
 	// From is the source address (or address range) of the route.
-	From *IP `json:"from,omitempty"`
+	From *gnet.IPNet `json:"from,omitempty"`
 	// To is the destination address (or address range) of the route.
-	To *IP `json:"to,omitempty"`
+	To *gnet.IPNet `json:"to,omitempty"`
 	// Via is the address that packets taking this route should be sent
 	// to.
-	Via *IP `json:"via,omitempty"`
+	Via *gnet.IPNet `json:"via,omitempty"`
 	// OnLink has the kernel skip the reachability check for the Via
 	// address.
 	OnLink bool `json:"on-link,omitempty"`
@@ -92,10 +93,10 @@ func (r *Route) validate() error {
 type RoutePolicy struct {
 	// From specifies the source address (or address range) to match.
 	// If omitted, any source address matches.
-	From *IP `json:"from,omitempty"`
+	From *gnet.IPNet `json:"from,omitempty"`
 	// To specifies a destination address (or address range) to match.
 	// If omitted, any destination address matches.
-	To *IP `json:"to,omitempty"`
+	To *gnet.IPNet `json:"to,omitempty"`
 	// Table specified the routing table to use if a packet matches.
 	Table int `json:"table,omitempty"`
 	// Priority specifies the priority of the route policy. The lower
@@ -150,7 +151,7 @@ type NSInfo struct {
 	// resolving domains.
 	Search []string `json:"search,omitempty"`
 	// Addresses is a list of DNS name server addresses.
-	Addresses []*IP `json:"addresses,omitempty"`
+	Addresses []*gnet.IPNet `json:"addresses,omitempty"`
 }
 
 func (n *NSInfo) validate() error {
@@ -182,13 +183,13 @@ type Network struct {
 	// assigned to this interface.  If this list is set and the DHCP
 	// flags are also set, these addresses and the DHCP addresses will
 	// be added to the interface.
-	Addresses []*IP `json:"addresses,omitempty"`
+	Addresses []*gnet.IPNet `json:"addresses,omitempty"`
 	// Gateway4 is the IPv4 default gateway address that should be set
 	// for this interface.
-	Gateway4 *IP `json:"gateway4,omitempty"`
+	Gateway4 *gnet.IPNet `json:"gateway4,omitempty"`
 	// Gateway6 is the IPv6 default gateway address that should be set
 	// for this interface.
-	Gateway6 *IP `json:"gateway6,omitempty"`
+	Gateway6 *gnet.IPNet `json:"gateway6,omitempty"`
 	// Nameservers defines what DNS name servers and search domains
 	// should be used.
 	Nameservers *NSInfo `json:"nameservers,omitempty"`
@@ -227,7 +228,7 @@ func (n *Network) validate() error {
 	e := &Err{Prefix: "network"}
 	ValidateStrIn(e, "dhcp-identifier", n.DhcpIdentifier, "mac", "")
 	if n.Addresses == nil {
-		n.Addresses = []*IP{}
+		n.Addresses = []*gnet.IPNet{}
 	}
 	ValidateIPList(e, "addresses", n.Addresses, true)
 	if n.Gateway4 != nil && n.Gateway4.IP.To4() == nil {
@@ -276,12 +277,12 @@ type Interface struct {
 	// CurrentHwAddr is the MAC address of a physical interface.  The
 	// Read() function of the input format is responsible for setting
 	// this to a proper value.
-	CurrentHwAddr HardwareAddr `json:"hwaddr,omitempty"`
+	CurrentHwAddr gnet.HardwareAddr `json:"hwaddr,omitempty"`
 	// MacAddress is the MAC address we want the interface to have.  Not
 	// all interface type support this.  Specifically, we do not yet
 	// support changing the mac address on a physical interface that
 	// already exists.
-	MacAddress HardwareAddr `json:"macaddress,omitempty"`
+	MacAddress gnet.HardwareAddr `json:"macaddress,omitempty"`
 	// Optional indicates to the output format that this interface is
 	// not required to be present or created for it to finish bringing
 	// up the network.  Optionality bubbles upwards from child to
@@ -402,7 +403,7 @@ type Layout struct {
 
 // Read() satisifies the Reader interface, although for the internal
 // Layout it is primarily used for debugging purposes.
-func (l *Layout) Read(src string, phys []Phy) (*Layout, error) {
+func (l *Layout) Read(src string, phys []gnet.Interface) (*Layout, error) {
 	in := os.Stdin
 	if src != "" {
 		i, e := os.Open(src)

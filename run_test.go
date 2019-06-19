@@ -3,7 +3,6 @@ package netwrangler
 import (
 	"io/ioutil"
 	"log"
-	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -14,29 +13,29 @@ import (
 	"testing"
 
 	yaml "github.com/ghodss/yaml"
-	"github.com/rackn/netwrangler/util"
+	gnet "github.com/rackn/gohai/plugins/net"
 )
 
-func m(s string) util.HardwareAddr {
-	mac, err := net.ParseMAC(s)
-	if err != nil {
+func m(s string) gnet.HardwareAddr {
+	res := &gnet.HardwareAddr{}
+	if err := res.UnmarshalText([]byte(s)); err != nil {
 		log.Panicf("Bad Mac %s: %v", s, err)
 	}
-	return util.HardwareAddr(mac)
+	return *res
 }
 
-var testPhys = []util.Phy{
-	{Name: "enp9s5", Driver: "foobar2000", HwAddr: m("de:ad:be:ef:ca:fe")},
-	{Name: "enp0s25", Driver: "broadcom", HwAddr: m("52:54:01:23:00:00")},
-	{Name: "enp1s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:01")},
-	{Name: "enp2s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:02")},
-	{Name: "enp3s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:03")},
-	{Name: "enp4s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:04")},
-	{Name: "enp5s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:05")},
-	{Name: "enp6s0", Driver: "e1000", HwAddr: m("52:54:01:23:00:06")},
-	{Name: "ens3", Driver: "realtek", HwAddr: m("52:54:01:23:00:07")},
-	{Name: "ens5", Driver: "realtek", HwAddr: m("52:54:01:23:00:08")},
-	{Name: "eno1", Driver: "realtek", HwAddr: m("52:54:01:23:00:09")},
+var testPhys = []gnet.Interface{
+	{Name: "enp9s5", Driver: "foobar2000", HardwareAddr: m("de:ad:be:ef:ca:fe")},
+	{Name: "enp0s25", Driver: "broadcom", HardwareAddr: m("52:54:01:23:00:00")},
+	{Name: "enp1s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:01")},
+	{Name: "enp2s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:02")},
+	{Name: "enp3s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:03")},
+	{Name: "enp4s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:04")},
+	{Name: "enp5s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:05")},
+	{Name: "enp6s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:06")},
+	{Name: "ens3", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:07")},
+	{Name: "ens5", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:08")},
+	{Name: "eno1", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:09")},
 }
 
 func diff(expect, actual string) (string, error) {
@@ -59,7 +58,7 @@ func cmpOut(t *testing.T, actual, expect string) {
 func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 	//t.Helper()
 	var (
-		phys []util.Phy
+		phys []gnet.Interface
 		err  error
 	)
 	pwd, _ := os.Getwd()
@@ -133,7 +132,7 @@ func TestPhys(t *testing.T) {
 	} else {
 		t.Logf("orig: %s", string(buf))
 	}
-	np := []util.Phy{}
+	np := []gnet.Interface{}
 	if err := yaml.Unmarshal(buf, &np); err != nil {
 		t.Errorf("Error unmarshalling phys: %v", err)
 		return

@@ -1,3 +1,5 @@
 package: github.com/rackn/netwrangler
 import:
 - package: github.com/ghodss/yaml
+- package: github.com/rackn/gohai
+  version: 2088e6ef1e096e071b575e791ce6c60d8419530d

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	yaml "github.com/ghodss/yaml"
+	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler/netplan"
 	"github.com/rackn/netwrangler/rhel"
 	"github.com/rackn/netwrangler/systemd"
@@ -20,13 +21,13 @@ var (
 
 // GatherPhys gathers the physical nics that the system knows about.
 // It is currently only supported on Linux systems.
-func GatherPhys() ([]util.Phy, error) {
+func GatherPhys() ([]gnet.Interface, error) {
 	return util.GatherPhys()
 }
 
 // GatherPhysFromFile gathers the physical nic information from a saved file.
 // This can be used for unit testing or buld offline operations.
-func GatherPhysFromFile(src string) (phys []util.Phy, err error) {
+func GatherPhysFromFile(src string) (phys []gnet.Interface, err error) {
 	var buf []byte
 	buf, err = ioutil.ReadFile(src)
 	if err != nil {
@@ -45,7 +46,7 @@ func GatherPhysFromFile(src string) (phys []util.Phy, err error) {
 // will bind to interface MAC addresses (or other unique physical
 // addresses), otherwise the interface names at srcLoc must match what
 // is present on the system at the time netwrangler is run.
-func Compile(phys []util.Phy, srcFmt, destFmt, srcLoc, destLoc string, bindMacs bool) error {
+func Compile(phys []gnet.Interface, srcFmt, destFmt, srcLoc, destLoc string, bindMacs bool) error {
 	var (
 		layout *util.Layout
 		err    error
