@@ -15,11 +15,14 @@ import (
 // the '?' character is translated into '.'
 //
 // All other characters that have a meaning to regexp are escaped.
-func Glob2RE(s string) *regexp.Regexp {
+func Glob2RE(s string) (*regexp.Regexp, error) {
+	if s[0] == '^' {
+		return regexp.Compile(s)
+	}
 	rs := regexp.QuoteMeta(s)
 	rs = strings.Replace(rs, `\*`, `.*`, -1)
 	rs = strings.Replace(rs, `\?`, `.`, -1)
-	return regexp.MustCompile("^" + rs + "$")
+	return regexp.Compile("^" + rs + "$")
 }
 
 // Reader is implemented by all source formats that netwrangler

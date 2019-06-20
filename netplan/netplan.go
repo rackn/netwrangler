@@ -141,7 +141,7 @@ type phy struct {
 	Optional bool       `json:"optional"`
 }
 
-func (pi phy) matchPhys(phys []gnet.Interface) []util.Interface {
+func (pi phy) matchPhys(phys []gnet.Interface) ([]util.Interface, error) {
 	if pi.Match.Name == "" &&
 		pi.Match.Driver == "" &&
 		len(pi.Match.MacAddress) == 0 {
@@ -324,7 +324,12 @@ func (n *Netplan) compile(phys []gnet.Interface) (*util.Layout, error) {
 			l.Interfaces[name] = intf
 		}
 		for _, k := range intf.Interfaces {
-			for _, newIntf := range util.MatchPhys(util.Match{Name: k}, util.Interface{}, phys) {
+			subs, err := util.MatchPhys(util.Match{Name: k}, util.Interface{}, phys)
+			if err != nil {
+				e.Errorf("Invalid interface match: %v", err)
+				return
+			}
+			for _, newIntf := range subs {
 				newIntf.MatchID = newIntf.Name
 				if _, ok := l.Interfaces[newIntf.Name]; !ok {
 					l.Interfaces[newIntf.Name] = newIntf
@@ -352,7 +357,11 @@ func (n *Netplan) compile(phys []gnet.Interface) (*util.Layout, error) {
 		}
 		intf := nv.(phy)
 		intf.Intf.MatchID = k
-		realInts := intf.matchPhys(phys)
+		realInts, err := intf.matchPhys(phys)
+		if err != nil {
+			e.Errorf("Invalid interface match: %v", err)
+			continue
+		}
 		if len(realInts) == 0 {
 			e.Errorf("Ethernet interface %s does not resolve to any interfaces", k)
 			continue

@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"net"
+	"regexp"
 
 	gnet "github.com/rackn/gohai/plugins/net"
 )
@@ -15,16 +16,30 @@ type Match struct {
 	Driver     string            `json:"driver,omitempty"`
 }
 
-func MatchPhys(m Match, tmpl Interface, phys []gnet.Interface) []Interface {
+func MatchPhys(m Match, tmpl Interface, phys []gnet.Interface) ([]Interface, error) {
 	res := []Interface{}
+	var matchName, matchDriver *regexp.Regexp
+	var err error
+	if m.Name != "" {
+		matchName, err = Glob2RE(m.Name)
+		if err != nil {
+			return res, err
+		}
+	}
+	if m.Driver != "" {
+		matchDriver, err = Glob2RE(m.Driver)
+		if err != nil {
+			return res, err
+		}
+	}
 	for _, phyInt := range phys {
-		if m.Name != "" &&
-			!Glob2RE(m.Name).MatchString(phyInt.Name) &&
-			!Glob2RE(m.Name).MatchString(phyInt.StableName) &&
-			!Glob2RE(m.Name).MatchString(phyInt.OrdinalName) {
+		if matchName != nil &&
+			!matchName.MatchString(phyInt.Name) &&
+			!matchName.MatchString(phyInt.StableName) &&
+			!matchName.MatchString(phyInt.OrdinalName) {
 			continue
 		}
-		if m.Driver != "" && m.Driver != phyInt.Driver {
+		if matchDriver != nil && !matchDriver.MatchString(phyInt.Driver) {
 			continue
 		}
 		if len(m.MacAddress) > 0 && !bytes.Equal(m.MacAddress, phyInt.HardwareAddr) {
@@ -36,7 +51,7 @@ func MatchPhys(m Match, tmpl Interface, phys []gnet.Interface) []Interface {
 		intf.CurrentHwAddr = phyInt.HardwareAddr
 		res = append(res, intf)
 	}
-	return res
+	return res, nil
 }
 
 // GatherPhys gathers all the physical interfaces present on the machine.
