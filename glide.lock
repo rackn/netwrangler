@@ -1,12 +1,12 @@
-hash: 19b19f7f04d79bf64e6e64fbf40ecc28def245ffb2ae6af1030d8d18c99f5c20
-updated: 2019-06-19T11:21:04.846106162-05:00
+hash: 042da6977f20513d634e30a4857e5dc1daeacb75d190c099af335b1445d314f0
+updated: 2019-06-20T09:07:08.645358506-05:00
 imports:
 - name: github.com/ghodss/yaml
-  version: e9ed3c6dfb39bb1a32197cb10d527906fe4da4b6
+  version: 25d852aebe32c875e9c044af3eef9c7dc6bc777f
 - name: github.com/rackn/gohai
-  version: 2088e6ef1e096e071b575e791ce6c60d8419530d
+  version: 92918a70111796e9e3eb4e53b0ce96c660fc7e09
   subpackages:
   - plugins/net
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 testImports: []

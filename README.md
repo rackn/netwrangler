@@ -31,6 +31,8 @@ configuration files.  Key differences are:
   YAML for its schema, not to allow additional layered customization.
 * No support for NIC renaming or MAC address reassignment.  Support
   may be added at a later date.
+* Where ther netplan.io spec calls for glob expansion, we also allow full
+  regular expressions,  as ling as the match in question starts with ^.
 * No support for per-interface backend renderers.  This just doesn't
   seem like a good idea if you don;t care about dynamic interface
   reconfiguration.
