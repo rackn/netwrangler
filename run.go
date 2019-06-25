@@ -55,32 +55,10 @@ func GatherPhysFromFile(src string) (phys []util.Phy, err error) {
 	return
 }
 
-// Compile transforms network configuration settings from srcLoc in
-// srcFmt into destFmt at destLoc, using phys as the base physical
-// interfaces to build on.  if bindMacs is true, the generated format
-// will bind to interface MAC addresses (or other unique physical
-// addresses), otherwise the interface names at srcLoc must match what
-// is present on the system at the time netwrangler is run.
-func Compile(phys []util.Phy, srcFmt, destFmt, srcLoc, destLoc string, bindMacs bool) error {
-	var (
-		layout *util.Layout
-		err    error
-		in     util.Reader
-		out    util.Writer
-	)
-	switch srcFmt {
-	case "netplan":
-		in = &netplan.Netplan{}
-	case "internal":
-		in = layout
-	default:
-		return fmt.Errorf("Unknown input format %s", srcFmt)
-	}
-	layout, err = in.Read(srcLoc, phys)
-	if err != nil {
-		return fmt.Errorf("Error reading '%s': %v", srcFmt, err)
-	}
-
+// Write writes out the compiled Layout in the specified format and location
+func Write(layout *util.Layout, destFmt, destLoc string, bindMacs bool) error {
+	var out util.Writer
+	var err error
 	switch destFmt {
 	case "internal":
 		out = layout
@@ -99,6 +77,34 @@ func Compile(phys []util.Phy, srcFmt, destFmt, srcLoc, destLoc string, bindMacs 
 		return fmt.Errorf("Error writing '%s': %v", destFmt, err)
 	}
 	return nil
+}
+
+// Compile transforms network configuration settings from srcLoc in
+// srcFmt into destFmt at destLoc, using phys as the base physical
+// interfaces to build on.  if bindMacs is true, the generated format
+// will bind to interface MAC addresses (or other unique physical
+// addresses), otherwise the interface names at srcLoc must match what
+// is present on the system at the time netwrangler is run.
+func Compile(phys []util.Phy, srcFmt, destFmt, srcLoc, destLoc string, bindMacs bool) error {
+	var (
+		layout *util.Layout
+		err    error
+		in     util.Reader
+	)
+	switch srcFmt {
+	case "netplan":
+		in = &netplan.Netplan{}
+	case "internal":
+		in = layout
+	default:
+		return fmt.Errorf("Unknown input format %s", srcFmt)
+	}
+	layout, err = in.Read(srcLoc, phys)
+	if err != nil {
+		return fmt.Errorf("Error reading '%s': %v", srcFmt, err)
+	}
+
+	return Write(layout, destFmt, destLoc, bindMacs)
 }
 
 // BootMac arranges for setting the BootIf flag on the phy corresponding to the
