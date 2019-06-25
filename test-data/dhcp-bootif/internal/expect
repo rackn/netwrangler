@@ -1,0 +1,12 @@
+Child2Parent: {}
+Interfaces:
+  eno1:
+    hwaddr: "52:54:01:23:00:09"
+    match-id: bootif
+    name: eno1
+    network:
+      accept-ra: true
+      dhcp4: true
+    type: physical
+Roots:
+- eno1

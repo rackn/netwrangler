@@ -34,8 +34,20 @@ configuration files.  Key differences are:
 * Where ther netplan.io spec calls for glob expansion, we also allow full
   regular expressions,  as ling as the match in question starts with ^.
 * No support for per-interface backend renderers.  This just doesn't
-  seem like a good idea if you don;t care about dynamic interface
+  seem like a good idea if you don't care about dynamic interface
   reconfiguration.
+* Support for a few interesting generic interface match names in the netplan:
+  - *bootif* is the interface the system last booted from.  You need to
+    set the -bootmac flag to the MAC address of the interface for this
+    name to be recognized.
+  - *onboard:1* ... *onboard:n* The first through nth onboard nics.
+    Whether a nic is onboard or not is determined by what udev thinks.
+  - *pci:1* ... *pci:n* The first through nth nic in PCI expansion slots.
+    These nics are always ordered by their PCI bus ordering, which can vary
+    on a system by system basis.
+  - *usb:1* ... *usb:n* The first through nth USB nics, also ordered
+    by bus order.  If you want to use one of these, make sure it stays plugged
+    in to the same USB port.
 
 ## Using NetWrangler
 
@@ -53,6 +65,8 @@ $ netwrangler --help
 Usage of cmd/netwrangler:
   -bindMacs
     	Whether to write configs that force matching physical devices on MAC address
+  -bootmac string
+    	Mac address of the nic the system booted from.  Required for magic bootif name matching
   -dest string
     	Location to write output to.  Defaults to stdout.
   -in string

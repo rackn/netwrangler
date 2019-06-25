@@ -14,6 +14,7 @@ import (
 
 	yaml "github.com/ghodss/yaml"
 	gnet "github.com/rackn/gohai/plugins/net"
+	"github.com/rackn/netwrangler/util"
 )
 
 func m(s string) gnet.HardwareAddr {
@@ -24,18 +25,96 @@ func m(s string) gnet.HardwareAddr {
 	return *res
 }
 
-var testPhys = []gnet.Interface{
-	{Name: "enp9s5", Driver: "foobar2000", HardwareAddr: m("de:ad:be:ef:ca:fe")},
-	{Name: "enp0s25", Driver: "broadcom", HardwareAddr: m("52:54:01:23:00:00")},
-	{Name: "enp1s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:01")},
-	{Name: "enp2s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:02")},
-	{Name: "enp3s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:03")},
-	{Name: "enp4s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:04")},
-	{Name: "enp5s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:05")},
-	{Name: "enp6s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:06")},
-	{Name: "ens3", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:07")},
-	{Name: "ens5", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:08")},
-	{Name: "eno1", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:09")},
+var testPhys = []util.Phy{
+	{
+		Interface: gnet.Interface{
+			Name:         "enp9s5",
+			OrdinalName:  "pci:8",
+			Driver:       "foobar2000",
+			HardwareAddr: m("de:ad:be:ef:ca:fe"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp0s25",
+			OrdinalName:  "pci:1",
+			Driver:       "broadcom",
+			HardwareAddr: m("52:54:01:23:00:00"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp1s0",
+			OrdinalName:  "pci:2",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:01"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp2s0",
+			OrdinalName:  "pci:3",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:02"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp3s0",
+			OrdinalName:  "pci:4",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:03"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp4s0",
+			OrdinalName:  "pci:5",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:04"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp5s0",
+			OrdinalName:  "pci:6",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:05"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp6s0",
+			OrdinalName:  "pci:7",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:06"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "ens3",
+			OrdinalName:  "onboard:2",
+			Driver:       "realtek",
+			HardwareAddr: m("52:54:01:23:00:07"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "ens5",
+			OrdinalName:  "onboard:3",
+			Driver:       "realtek",
+			HardwareAddr: m("52:54:01:23:00:08"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "eno1",
+			OrdinalName:  "onboard:1",
+			Driver:       "realtek",
+			HardwareAddr: m("52:54:01:23:00:09"),
+		},
+		BootIf: true,
+	},
 }
 
 func diff(expect, actual string) (string, error) {
@@ -58,7 +137,7 @@ func cmpOut(t *testing.T, actual, expect string) {
 func testRun(t *testing.T, loc, in, out string, wantErr bool) {
 	//t.Helper()
 	var (
-		phys []gnet.Interface
+		phys []util.Phy
 		err  error
 	)
 	pwd, _ := os.Getwd()
@@ -132,7 +211,7 @@ func TestPhys(t *testing.T) {
 	} else {
 		t.Logf("orig: %s", string(buf))
 	}
-	np := []gnet.Interface{}
+	np := []util.Phy{}
 	if err := yaml.Unmarshal(buf, &np); err != nil {
 		t.Errorf("Error unmarshalling phys: %v", err)
 		return

@@ -1,0 +1,9 @@
+# Created by netwrangler
+DEVICE="br0"
+TYPE="Bridge"
+ONBOOT="yes"
+BOOTPROTO="none"
+IPADDR0="10.3.99.25"
+NETMASK0="255.255.255.0"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

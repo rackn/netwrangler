@@ -1,0 +1,5 @@
+# Created by netwrangler
+DEVICE="enp4s0"
+TYPE="Ethernet"
+BRIDGE="br0"
+ONBOOT="yes"

@@ -4,8 +4,6 @@ package util
 import (
 	"regexp"
 	"strings"
-
-	gnet "github.com/rackn/gohai/plugins/net"
 )
 
 // Glob2RE translates a globbed string and translates it into a regular expression.
@@ -28,7 +26,7 @@ func Glob2RE(s string) (*regexp.Regexp, error) {
 // Reader is implemented by all source formats that netwrangler
 // understands
 type Reader interface {
-	Read(string, []gnet.Interface) (*Layout, error)
+	Read(string, []Phy) (*Layout, error)
 }
 
 // Writer is implemented by all target formats that netwrangler understands

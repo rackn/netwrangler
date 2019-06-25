@@ -1,0 +1,6 @@
+[Match]
+Name=ens5
+
+[Network]
+DHCP=ipv4
+IPv6AcceptRA=true

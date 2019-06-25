@@ -1,0 +1,7 @@
+[Match]
+Name=br0
+
+[Network]
+VLAN=vlan15
+IPv6AcceptRA=true
+Address=10.3.99.25/24

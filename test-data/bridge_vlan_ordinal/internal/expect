@@ -1,0 +1,82 @@
+Child2Parent:
+  br0:
+  - vlan15
+  enp3s0:
+  - br0
+  enp4s0:
+  - br0
+  enp5s0:
+  - br0
+  enp6s0:
+  - br0
+Interfaces:
+  br0:
+    interfaces:
+    - enp3s0
+    - enp4s0
+    - enp5s0
+    - enp6s0
+    match-id: br0
+    name: br0
+    network:
+      accept-ra: true
+      addresses:
+      - 10.3.99.25/24
+    type: bridge
+  eno1:
+    hwaddr: "52:54:01:23:00:09"
+    match-id: onboards
+    name: eno1
+    network:
+      accept-ra: true
+      dhcp4: true
+    type: physical
+  enp3s0:
+    hwaddr: "52:54:01:23:00:03"
+    match-id: bridgeifs
+    name: enp3s0
+    type: physical
+  enp4s0:
+    hwaddr: "52:54:01:23:00:04"
+    match-id: bridgeifs
+    name: enp4s0
+    type: physical
+  enp5s0:
+    hwaddr: "52:54:01:23:00:05"
+    match-id: bridgeifs
+    name: enp5s0
+    type: physical
+  enp6s0:
+    hwaddr: "52:54:01:23:00:06"
+    match-id: bridgeifs
+    name: enp6s0
+    type: physical
+  ens3:
+    hwaddr: "52:54:01:23:00:07"
+    match-id: onboards
+    name: ens3
+    network:
+      accept-ra: true
+      dhcp4: true
+    type: physical
+  ens5:
+    hwaddr: "52:54:01:23:00:08"
+    match-id: onboards
+    name: ens5
+    network:
+      accept-ra: true
+      dhcp4: true
+    type: physical
+  vlan15:
+    interfaces:
+    - br0
+    match-id: vlan15
+    name: vlan15
+    parameters:
+      id: 15
+    type: vlan
+Roots:
+- eno1
+- ens3
+- ens5
+- vlan15
