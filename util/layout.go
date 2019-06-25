@@ -401,6 +401,10 @@ type Layout struct {
 	Roots []string
 }
 
+func (l *Layout) Compile(phys []Phy) (*Layout, error) {
+	return l, nil
+}
+
 // Read() satisifies the Reader interface, although for the internal
 // Layout it is primarily used for debugging purposes.
 func (l *Layout) Read(src string, phys []Phy) (*Layout, error) {

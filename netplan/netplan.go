@@ -304,7 +304,7 @@ func getNames(i map[string]interface{}) []string {
 	return res
 }
 
-func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
+func (n *Netplan) Compile(phys []util.Phy) (*util.Layout, error) {
 	e := &util.Err{Prefix: "netplan"}
 	l := &util.Layout{
 		Interfaces: map[string]util.Interface{},
@@ -417,5 +417,5 @@ func (n *Netplan) Read(src string, phys []util.Phy) (*util.Layout, error) {
 	if err := yaml.Unmarshal(buf, n); err != nil {
 		return nil, err
 	}
-	return n.compile(phys)
+	return n.Compile(phys)
 }

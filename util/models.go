@@ -26,6 +26,7 @@ func Glob2RE(s string) (*regexp.Regexp, error) {
 // Reader is implemented by all source formats that netwrangler
 // understands
 type Reader interface {
+	Compile([]Phy) (*Layout, error)
 	Read(string, []Phy) (*Layout, error)
 }
 
