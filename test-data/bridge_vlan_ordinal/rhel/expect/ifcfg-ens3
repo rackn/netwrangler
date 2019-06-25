@@ -1,0 +1,7 @@
+# Created by netwrangler
+DEVICE="ens3"
+TYPE="Ethernet"
+ONBOOT="yes"
+BOOTPROTO="dhcp"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"

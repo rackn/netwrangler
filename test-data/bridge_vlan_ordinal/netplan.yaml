@@ -1,0 +1,20 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    onboards:
+      match:
+        name: 'onboard:*'
+      dhcp4: true
+    bridgeifs:
+      match:
+        name: '^pci:(4|5|6|7)$'
+  bridges:
+    br0:
+      addresses: [ 10.3.99.25/24 ]
+      interfaces: [ bridgeifs ]
+  vlans:
+    vlan15:
+      accept-ra: no
+      id: 15
+      link: br0

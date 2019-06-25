@@ -1,0 +1,6 @@
+# Created by netwrangler
+DEVICE="vlan15"
+VLAN="yes"
+VID="15"
+PHYSDEV="br0"
+ONBOOT="yes"
