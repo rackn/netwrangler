@@ -403,7 +403,7 @@ type Layout struct {
 
 // Read() satisifies the Reader interface, although for the internal
 // Layout it is primarily used for debugging purposes.
-func (l *Layout) Read(src string, phys []gnet.Interface) (*Layout, error) {
+func (l *Layout) Read(src string, phys []Phy) (*Layout, error) {
 	in := os.Stdin
 	if src != "" {
 		i, e := os.Open(src)

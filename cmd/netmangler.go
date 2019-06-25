@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	yaml "github.com/ghodss/yaml"
-	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler"
+	"github.com/rackn/netwrangler/util"
 )
 
 func main() {
-	op, inFmt, outFmt, src, dest, physIn := "", "", "", "", "", ""
+	op, inFmt, outFmt, src, dest, physIn, bootMac := "", "", "", "", "", "", ""
 	bindMacs := false
 	args := os.Args[:]
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -28,12 +28,14 @@ func main() {
 	fs.StringVar(&src, "src", "", "Location to get input from.  Defaults to stdin.")
 	fs.StringVar(&dest, "dest", "", "Location to write output to.  Defaults to stdout.")
 	fs.StringVar(&physIn, "phys", "", "File to read to gather current physical nics.  Defaults to reading them from the kernel.")
+	fs.StringVar(&bootMac, "bootmac", "", "Mac address of the nic the system booted from.  Required for magic bootif name matching")
 	fs.BoolVar(&bindMacs, "bindMacs", false, "Whether to write configs that force matching physical devices on MAC address")
 	if err := fs.Parse(args[1:]); err != nil {
 		log.Fatal(err)
 	}
 	switch op {
 	case "gather":
+		netwrangler.BootMac(bootMac)
 		phys, err := netwrangler.GatherPhys()
 		if err != nil {
 			log.Fatal(err)
@@ -55,9 +57,10 @@ func main() {
 		}
 	case "compile":
 		var (
-			phys []gnet.Interface
+			phys []util.Phy
 			err  error
 		)
+		netwrangler.BootMac(bootMac)
 		if physIn == "" {
 			phys, err = netwrangler.GatherPhys()
 		} else {

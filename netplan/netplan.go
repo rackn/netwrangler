@@ -23,7 +23,6 @@ import (
 	"sort"
 
 	yaml "github.com/ghodss/yaml"
-	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler/util"
 )
 
@@ -141,7 +140,7 @@ type phy struct {
 	Optional bool       `json:"optional"`
 }
 
-func (pi phy) matchPhys(phys []gnet.Interface) ([]util.Interface, error) {
+func (pi phy) matchPhys(phys []util.Phy) ([]util.Interface, error) {
 	if pi.Match.Name == "" &&
 		pi.Match.Driver == "" &&
 		len(pi.Match.MacAddress) == 0 {
@@ -305,7 +304,7 @@ func getNames(i map[string]interface{}) []string {
 	return res
 }
 
-func (n *Netplan) compile(phys []gnet.Interface) (*util.Layout, error) {
+func (n *Netplan) compile(phys []util.Phy) (*util.Layout, error) {
 	e := &util.Err{Prefix: "netplan"}
 	l := &util.Layout{
 		Interfaces: map[string]util.Interface{},
@@ -401,7 +400,7 @@ func (n *Netplan) compile(phys []gnet.Interface) (*util.Layout, error) {
 
 // Read satisfies the Reader interface so that Netplan can be used as
 // a input format.
-func (n *Netplan) Read(src string, phys []gnet.Interface) (*util.Layout, error) {
+func (n *Netplan) Read(src string, phys []util.Phy) (*util.Layout, error) {
 	in := os.Stdin
 	if src != "" {
 		i, e := os.Open(src)

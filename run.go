@@ -1,11 +1,13 @@
 package netwrangler
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
+	"net"
+	"strings"
 
 	yaml "github.com/ghodss/yaml"
-	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler/netplan"
 	"github.com/rackn/netwrangler/rhel"
 	"github.com/rackn/netwrangler/systemd"
@@ -17,17 +19,29 @@ var (
 	SrcFormats = []string{"netplan", "internal"}
 	// The output formats we can handle.  internal is the intermediate format netwrangler uses.
 	DestFormats = []string{"systemd", "rhel", "internal"}
+	// The MAC address of the device we booted from.
+	bootMac net.HardwareAddr
 )
+
+func fillBootIf(phys []util.Phy) {
+	if phys != nil && bootMac != nil {
+		for i := range phys {
+			phys[i].BootIf = bytes.Equal(phys[i].HardwareAddr, bootMac)
+		}
+	}
+}
 
 // GatherPhys gathers the physical nics that the system knows about.
 // It is currently only supported on Linux systems.
-func GatherPhys() ([]gnet.Interface, error) {
-	return util.GatherPhys()
+func GatherPhys() ([]util.Phy, error) {
+	res, err := util.GatherPhys()
+	fillBootIf(res)
+	return res, err
 }
 
 // GatherPhysFromFile gathers the physical nic information from a saved file.
 // This can be used for unit testing or buld offline operations.
-func GatherPhysFromFile(src string) (phys []gnet.Interface, err error) {
+func GatherPhysFromFile(src string) (phys []util.Phy, err error) {
 	var buf []byte
 	buf, err = ioutil.ReadFile(src)
 	if err != nil {
@@ -37,6 +51,7 @@ func GatherPhysFromFile(src string) (phys []gnet.Interface, err error) {
 	if err = yaml.Unmarshal(buf, &phys); err != nil {
 		err = fmt.Errorf("Error unmarshalling phys: %v", err)
 	}
+	fillBootIf(phys)
 	return
 }
 
@@ -46,7 +61,7 @@ func GatherPhysFromFile(src string) (phys []gnet.Interface, err error) {
 // will bind to interface MAC addresses (or other unique physical
 // addresses), otherwise the interface names at srcLoc must match what
 // is present on the system at the time netwrangler is run.
-func Compile(phys []gnet.Interface, srcFmt, destFmt, srcLoc, destLoc string, bindMacs bool) error {
+func Compile(phys []util.Phy, srcFmt, destFmt, srcLoc, destLoc string, bindMacs bool) error {
 	var (
 		layout *util.Layout
 		err    error
@@ -84,4 +99,21 @@ func Compile(phys []gnet.Interface, srcFmt, destFmt, srcLoc, destLoc string, bin
 		return fmt.Errorf("Error writing '%s': %v", destFmt, err)
 	}
 	return nil
+}
+
+// BootMac arranges for setting the BootIf flag on the phy corresponding to the
+// interface we booted from.  Must be called before phys are gathered.
+func BootMac(mac string) error {
+	if len(mac) == 0 {
+		return nil
+	}
+	mac = strings.ReplaceAll(mac, "-", ":")
+	parts := strings.Count(mac, ":")
+	switch parts {
+	case 6, 8, 20:
+		mac = mac[3:]
+	}
+	var err error
+	bootMac, err = net.ParseMAC(mac)
+	return err
 }
