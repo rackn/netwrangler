@@ -38,17 +38,19 @@ func MatchPhys(m Match, tmpl Interface, phys []Phy) ([]Interface, error) {
 		}
 	}
 	for _, phy := range phys {
-		if !((m.Name == "bootif" && phy.BootIf) ||
-			(matchName == nil) ||
-			matchName.MatchString(phy.Name) ||
-			matchName.MatchString(phy.StableName) ||
-			matchName.MatchString(phy.OrdinalName)) {
-			continue
-		}
 		if matchDriver != nil && !matchDriver.MatchString(phy.Driver) {
 			continue
 		}
 		if len(m.MacAddress) > 0 && !bytes.Equal(m.MacAddress, phy.HardwareAddr) {
+			continue
+		}
+		if m.Name == "bootif" {
+			if !phy.BootIf {
+				continue
+			}
+		} else if matchName != nil && !(matchName.MatchString(phy.Name) ||
+			matchName.MatchString(phy.StableName) ||
+			matchName.MatchString(phy.OrdinalName)) {
 			continue
 		}
 		intf := tmpl

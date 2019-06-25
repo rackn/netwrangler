@@ -26,19 +26,94 @@ func m(s string) gnet.HardwareAddr {
 }
 
 var testPhys = []util.Phy{
-	{Interface: gnet.Interface{Name: "enp9s5", Driver: "foobar2000", HardwareAddr: m("de:ad:be:ef:ca:fe")}},
-	{Interface: gnet.Interface{Name: "enp0s25", Driver: "broadcom", HardwareAddr: m("52:54:01:23:00:00")}},
-	{Interface: gnet.Interface{Name: "enp1s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:01")}},
-	{Interface: gnet.Interface{Name: "enp2s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:02")}},
-	{Interface: gnet.Interface{Name: "enp3s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:03")}},
-	{Interface: gnet.Interface{Name: "enp4s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:04")}},
-	{Interface: gnet.Interface{Name: "enp5s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:05")}},
-	{Interface: gnet.Interface{Name: "enp6s0", Driver: "e1000", HardwareAddr: m("52:54:01:23:00:06")}},
-	{Interface: gnet.Interface{Name: "ens3", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:07")}},
-	{Interface: gnet.Interface{Name: "ens5", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:08")}},
 	{
-		Interface: gnet.Interface{Name: "eno1", Driver: "realtek", HardwareAddr: m("52:54:01:23:00:09")},
-		BootIf:    true,
+		Interface: gnet.Interface{
+			Name:         "enp9s5",
+			OrdinalName:  "pci:8",
+			Driver:       "foobar2000",
+			HardwareAddr: m("de:ad:be:ef:ca:fe"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp0s25",
+			OrdinalName:  "pci:1",
+			Driver:       "broadcom",
+			HardwareAddr: m("52:54:01:23:00:00"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp1s0",
+			OrdinalName:  "pci:2",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:01"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp2s0",
+			OrdinalName:  "pci:3",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:02"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp3s0",
+			OrdinalName:  "pci:4",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:03"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp4s0",
+			OrdinalName:  "pci:5",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:04"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp5s0",
+			OrdinalName:  "pci:6",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:05"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "enp6s0",
+			OrdinalName:  "pci:7",
+			Driver:       "e1000",
+			HardwareAddr: m("52:54:01:23:00:06"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "ens3",
+			OrdinalName:  "onboard:2",
+			Driver:       "realtek",
+			HardwareAddr: m("52:54:01:23:00:07"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "ens5",
+			OrdinalName:  "onboard:3",
+			Driver:       "realtek",
+			HardwareAddr: m("52:54:01:23:00:08"),
+		},
+	},
+	{
+		Interface: gnet.Interface{
+			Name:         "eno1",
+			OrdinalName:  "onboard:1",
+			Driver:       "realtek",
+			HardwareAddr: m("52:54:01:23:00:09"),
+		},
+		BootIf: true,
 	},
 }
 
