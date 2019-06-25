@@ -17,7 +17,7 @@ NetWrangler is a one-shot network interface configuration utility that
 is mostly compatible with [https://netplan.io](https://netplan.io)
 configuration files.  Key differences are:
 
-* It only supports systemd-networkd and old-style Redhat network
+* It only supports `systemd-networkd` and old-style Redhat network
   configurations as output formats.  Debian style is a planned on, and
   NetworkManager style is a lower priority.
 * No support for configuring wireless interfaces.  This tool is mainly
@@ -27,18 +27,21 @@ configuration files.  Key differences are:
   This tool is intended to be run as part of device provisioning,
   where we expect to set the desired network interface config once and
   then forget about it until it is time to reprovision the box.
-* No support for hierarchical config files.  We use the netplan.io
-  YAML for its schema, not to allow additional layered customization.
+* No support for hierarchical config files.  We use the
+  [netplan.io YAML](https://netplan.io/reference#general-structure)
+  for its schema, not to allow additional layered customization.
 * No support for NIC renaming or MAC address reassignment.  Support
   may be added at a later date.
-* Where ther netplan.io spec calls for glob expansion, we also allow full
-  regular expressions,  as ling as the match in question starts with ^.
+* Where the **netplan.io** [spec calls for glob 
+  expansion](https://netplan.io/reference#common-properties-for-physical-device-types),
+  we also allow full [regular expressions](https://en.wikipedia.org/wiki/Regular_expression),
+  as long as the match in question starts with `^`.
 * No support for per-interface backend renderers.  This just doesn't
   seem like a good idea if you don't care about dynamic interface
   reconfiguration.
 * Support for a few interesting generic interface match names in the netplan:
   - *bootif* is the interface the system last booted from.  You need to
-    set the -bootmac flag to the MAC address of the interface for this
+    set the `-bootmac` flag to the MAC address of the interface for this
     name to be recognized.
   - *onboard:1* ... *onboard:n* The first through nth onboard nics.
     Whether a nic is onboard or not is determined by what udev thinks.
@@ -81,13 +84,13 @@ Usage of cmd/netwrangler:
     	File to read to gather current physical nics.  Defaults to reading them from the kernel.
   -src string
     	Location to get input from.  Defaults to stdin.
-2019/03/21 10:34:16 flag: help requested
+2019/06/25 16:16:40 flag: help requested
 ```
 
 ## Building NetWrangler
 
 NetWrangler is a Go Lang project, and is simple to build.  Please
-install Go version 1.10 or newer (older versions may work but have
+install **Go version 1.12 or newer** (older versions may work but have
 not been tested).  See [https://golang.org/doc/install[(https://golang.org/doc/install)
 
 In the future, compiled builds may be provided.
