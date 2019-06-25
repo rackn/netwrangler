@@ -14,6 +14,8 @@ import (
 	"github.com/rackn/netwrangler/util"
 )
 
+var _ = ___NETWRANGLER_REQUIRES_GO_VERSION_1_12_OR_HIGHER_TO_BUILD___
+
 var (
 	// The input formats we accept.  internal is the intermediate format netwrangler uses.
 	SrcFormats = []string{"netplan", "internal"}
