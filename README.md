@@ -34,7 +34,7 @@ configuration files.  Key differences are:
   may be added at a later date.
 * Where the **netplan.io** [spec calls for glob 
   expansion](https://netplan.io/reference#common-properties-for-physical-device-types),
-  we also allow full [regular expressions](https://en.wikipedia.org/wiki/Regular_expression),
+  we also allow full [regular expressions](https://github.com/google/re2/wiki/Syntax),
   as long as the match in question starts with `^`.
 * No support for per-interface backend renderers.  This just doesn't
   seem like a good idea if you don't care about dynamic interface
