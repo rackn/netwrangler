@@ -18,11 +18,13 @@ package netplan
 
 import (
 	"io/ioutil"
+	"log"
 	"math"
 	"os"
 	"sort"
 
 	yaml "github.com/ghodss/yaml"
+	gnet "github.com/rackn/gohai/plugins/net"
 	"github.com/rackn/netwrangler/util"
 )
 
@@ -284,12 +286,18 @@ func vlan() util.Validator {
 type Netplan struct {
 	Network struct {
 		Version   int                    `json:"version"`
-		Ethernets map[string]interface{} `json:"ethernets"`
-		Bridges   map[string]interface{} `json:"bridges"`
-		Bonds     map[string]interface{} `json:"bonds"`
-		Vlans     map[string]interface{} `json:"vlans"`
-		Wifis     map[string]interface{} `json:"wifis"`
+		Renderer  string                 `json:"renderer,omitempty"`
+		Ethernets map[string]interface{} `json:"ethernets,omitempty"`
+		Bridges   map[string]interface{} `json:"bridges,omitempty"`
+		Bonds     map[string]interface{} `json:"bonds,omitempty"`
+		Vlans     map[string]interface{} `json:"vlans,omitempty"`
+		Wifis     map[string]interface{} `json:"wifis,omitempty"`
 	} `json:"network"`
+	bindMac bool
+}
+
+func (n *Netplan) BindMacs() {
+	n.bindMac = true
 }
 
 func getNames(i map[string]interface{}) []string {
@@ -301,6 +309,138 @@ func getNames(i map[string]interface{}) []string {
 		res = append(res, k)
 	}
 	sort.Strings(res)
+	return res
+}
+
+type Common struct {
+	*util.Network
+	MacAddress gnet.HardwareAddr `json:"macaddress,omitempty"`
+	Renderer   string            `json:"renderer,omitempty"`
+	Optional   bool              `json:"optional,omitempty"`
+}
+
+func asCommon(i util.Interface) Common {
+	return Common{
+		Network:    i.Network,
+		Optional:   i.Optional,
+		MacAddress: i.MacAddress,
+	}
+}
+
+type Ether struct {
+	Common
+	Match     map[string]string `json:"match,omitempty"`
+	WakeOnLan bool              `json:"wakeonlan,omitempty"`
+}
+
+func asEther(i util.Interface) Ether {
+	res := Ether{Common: asCommon(i)}
+	res.MacAddress = nil
+	if v, ok := i.Parameters[`wakeonlan`]; ok && v.(bool) {
+		res.WakeOnLan = true
+	}
+	res.Match = map[string]string{
+		"macaddress": i.CurrentHwAddr.String(),
+	}
+	return res
+}
+
+type Bond struct {
+	Common
+	Interfaces []string               `json:"interfaces,omitempty"`
+	Parameters map[string]interface{} `json:"parameters,omitempty"`
+}
+
+func asBond(i util.Interface) Bond {
+	return Bond{
+		Common:     asCommon(i),
+		Parameters: i.Parameters,
+		Interfaces: i.Interfaces,
+	}
+}
+
+type Bridge struct {
+	Common
+	Interfaces []string               `json:"interfaces,omitempty"`
+	Parameters map[string]interface{} `json:"parameters,omitempty"`
+}
+
+func asBridge(i util.Interface) Bridge {
+	return Bridge{
+		Common:     asCommon(i),
+		Parameters: i.Parameters,
+		Interfaces: i.Interfaces,
+	}
+}
+
+type Vlan struct {
+	Common
+	ID   int    `json:"id"`
+	Link string `json:"link"`
+}
+
+func asVlan(i util.Interface) Vlan {
+	return Vlan{
+		Common: asCommon(i),
+		ID:     i.Parameters[`id`].(int),
+		Link:   i.Interfaces[0],
+	}
+}
+
+func (n *Netplan) Write(dest string) error {
+	out := os.Stdout
+	if dest != "" {
+		o, e := os.Create(dest)
+		if e != nil {
+			return e
+		}
+		defer o.Close()
+		out = o
+	}
+	toElide := []string{}
+	for k := range n.Network.Ethernets {
+		if !n.bindMac {
+			delete(n.Network.Ethernets[k].(Ether).Match, "macaddress")
+		}
+		buf, err := yaml.Marshal(n.Network.Ethernets[k])
+		if err == nil && string(buf) == "{}\n" {
+			toElide = append(toElide, k)
+		}
+	}
+	for _, k := range toElide {
+		delete(n.Network.Ethernets, k)
+	}
+	buf, err := yaml.Marshal(n)
+	if err != nil {
+		return err
+	}
+	_, err = out.Write(buf)
+	return err
+}
+
+// New creates a new Netplan that will render using networkd.
+func New(l *util.Layout) *Netplan {
+	res := &Netplan{}
+	res.Network.Version = 2
+	res.Network.Renderer = "networkd"
+	res.Network.Ethernets = map[string]interface{}{}
+	res.Network.Bridges = map[string]interface{}{}
+	res.Network.Bonds = map[string]interface{}{}
+	res.Network.Vlans = map[string]interface{}{}
+	for _, i := range l.Interfaces {
+		switch i.Type {
+		case "physical":
+			res.Network.Ethernets[i.Name] = asEther(i)
+		case "bond":
+			res.Network.Bonds[i.Name] = asBond(i)
+		case "bridge":
+			res.Network.Bridges[i.Name] = asBridge(i)
+		case "vlan":
+			res.Network.Vlans[i.Name] = asVlan(i)
+		default:
+			log.Panicf("Unknown interface type %s", i.Type)
+		}
+	}
 	return res
 }
 

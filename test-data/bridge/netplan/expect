@@ -1,0 +1,9 @@
+network:
+  bridges:
+    br0:
+      accept-ra: true
+      dhcp4: true
+      interfaces:
+      - enp3s0
+  renderer: networkd
+  version: 2

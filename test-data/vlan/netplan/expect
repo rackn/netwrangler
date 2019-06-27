@@ -1,0 +1,34 @@
+network:
+  ethernets:
+    enp9s5:
+      accept-ra: true
+      addresses:
+      - 10.3.0.5/23
+      gateway4: 10.3.0.1
+      nameservers:
+        addresses:
+        - 8.8.8.8
+        - 8.8.4.4
+        search:
+        - example.com
+  renderer: networkd
+  version: 2
+  vlans:
+    vlan10:
+      accept-ra: true
+      addresses:
+      - 10.3.98.5/24
+      id: 10
+      link: enp9s5
+      nameservers:
+        addresses:
+        - 127.0.0.1
+        search:
+        - domain1.example.com
+        - domain2.example.com
+    vlan15:
+      accept-ra: true
+      addresses:
+      - 10.3.99.5/24
+      id: 15
+      link: enp9s5

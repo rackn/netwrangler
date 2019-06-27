@@ -1,0 +1,8 @@
+network:
+  ethernets:
+    enp3s0:
+      accept-ra: true
+      dhcp-identifier: mac
+      dhcp4: true
+  renderer: networkd
+  version: 2

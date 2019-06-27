@@ -1,0 +1,7 @@
+network:
+  ethernets:
+    eno1:
+      accept-ra: true
+      dhcp4: true
+  renderer: networkd
+  version: 2

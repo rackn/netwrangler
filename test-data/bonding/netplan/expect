@@ -1,0 +1,13 @@
+network:
+  bonds:
+    bond0:
+      accept-ra: true
+      dhcp4: true
+      interfaces:
+      - enp3s0
+      - enp4s0
+      parameters:
+        mode: active-backup
+        primary: enp3s0
+  renderer: networkd
+  version: 2
