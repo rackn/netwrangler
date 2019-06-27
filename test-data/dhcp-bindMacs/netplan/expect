@@ -1,0 +1,9 @@
+network:
+  ethernets:
+    enp3s0:
+      accept-ra: true
+      dhcp4: true
+      match:
+        macaddress: "52:54:01:23:00:03"
+  renderer: networkd
+  version: 2

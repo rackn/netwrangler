@@ -299,6 +299,7 @@ type Interface struct {
 	// Network contains the layer3 network configuration that should be
 	// applied to this Interface once it is brought up, if any.
 	Network *Network `json:"network,omitempty"`
+	bindMac bool
 }
 
 // NewInterface returns a new Interface with non-nil Interfaces and

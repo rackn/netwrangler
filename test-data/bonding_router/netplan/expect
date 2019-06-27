@@ -1,0 +1,51 @@
+network:
+  bonds:
+    bond-conntrack:
+      accept-ra: true
+      addresses:
+      - 192.168.254.2/24
+      interfaces:
+      - enp5s0
+      - enp6s0
+      parameters:
+        mii-monitor-interval: 1
+        mode: balance-rr
+    bond-lan:
+      accept-ra: true
+      addresses:
+      - 192.168.93.2/24
+      interfaces:
+      - enp2s0
+      - enp3s0
+      parameters:
+        mii-monitor-interval: 1
+        mode: 802.3ad
+    bond-wan:
+      accept-ra: true
+      addresses:
+      - 192.168.1.252/24
+      gateway4: 192.168.1.1
+      interfaces:
+      - enp1s0
+      - enp4s0
+      nameservers:
+        addresses:
+        - 8.8.8.8
+        - 8.8.4.4
+        search:
+        - local
+      parameters:
+        gratuitous-arp: 5
+        mii-monitor-interval: 1
+        mode: active-backup
+  ethernets:
+    enp3s0:
+      optional: true
+    enp4s0:
+      optional: true
+    enp5s0:
+      optional: true
+    enp6s0:
+      optional: true
+  renderer: networkd
+  version: 2

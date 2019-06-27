@@ -1,0 +1,27 @@
+network:
+  bridges:
+    br0:
+      accept-ra: true
+      addresses:
+      - 10.3.99.25/24
+      interfaces:
+      - enp3s0
+      - enp4s0
+      - enp5s0
+      - enp6s0
+  ethernets:
+    eno1:
+      accept-ra: true
+      dhcp4: true
+    ens3:
+      accept-ra: true
+      dhcp4: true
+    ens5:
+      accept-ra: true
+      dhcp4: true
+  renderer: networkd
+  version: 2
+  vlans:
+    vlan15:
+      id: 15
+      link: br0

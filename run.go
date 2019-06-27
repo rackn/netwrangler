@@ -18,7 +18,7 @@ var (
 	// The input formats we accept.  internal is the intermediate format netwrangler uses.
 	SrcFormats = []string{"netplan", "internal"}
 	// The output formats we can handle.  internal is the intermediate format netwrangler uses.
-	DestFormats = []string{"systemd", "rhel", "internal"}
+	DestFormats = []string{"netplan", "systemd", "rhel", "internal"}
 	// The MAC address of the device we booted from.
 	bootMac net.HardwareAddr
 )
@@ -62,6 +62,8 @@ func Write(layout *util.Layout, destFmt, destLoc string, bindMacs bool) error {
 	switch destFmt {
 	case "internal":
 		out = layout
+	case "netplan":
+		out = netplan.New(layout)
 	case "systemd":
 		out = systemd.New(layout)
 	case "rhel":
