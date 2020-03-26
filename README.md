@@ -174,4 +174,5 @@ Please refer to it for full details.
 NetWrangler is [Apache License 2.0](https://github.com/rackn/netwrangler/blob/master/LICENSE).
 
 To contribute to the Netwrangler repo, please fork and submit a PUll Request on a Branch.  You
-will need to sign the Digital Rebar Community License Agreement prior to submitting the PR.
+will need to sign the Digital Rebar Community License Agreement prior to submitting the PR. Thank
+you in advance for your contributions!
