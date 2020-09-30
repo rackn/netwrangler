@@ -2,6 +2,7 @@ github.com/ghodss/yaml v0.0.0-20190212211648-25d852aebe32 h1:KAaAf12i9OYioQMQPO2
 github.com/ghodss/yaml v0.0.0-20190212211648-25d852aebe32/go.mod h1:GIjDIg/heH5DOkXY3YJ/wNhfHsQHoXGjl8G8amsYQ1I=
 github.com/rackn/gohai v0.0.0-20190619164647-92918a701117 h1:GjnCXsgE6D7gyD1XFALuxS38GM6go7KdWrDA0QbNO3U=
 github.com/rackn/gohai v0.0.0-20190619164647-92918a701117/go.mod h1:1NhfVxJ6qD4S5ondz2CobWFiYlODF8ex4pNgQrKYCxc=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
