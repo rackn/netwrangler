@@ -163,7 +163,7 @@ func (r *Rhel) writeOut(i util.Interface, e *util.Err) {
 		writeKey(fmt.Sprintf("NETMASK%d", idx), net.IP(addr.Mask).To4().String())
 	}
 	if nw.Gateway4 != nil {
-		writeKey("GATEWAY", nw.Gateway4.IP.String())
+		writeKey("GATEWAY0", nw.Gateway4.IP.String())
 	}
 	if len(v6addrs) > 0 || nw.Dhcp6 || nw.AcceptRa {
 		writeKey("IPV6INIT", "yes")
