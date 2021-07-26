@@ -1,7 +1,17 @@
+github.com/VictorLowther/godmi v0.6.1 h1:cg88u82jFuLC72TC4tHAfNjMQyrwltO5U8BtoBA4lFo=
+github.com/VictorLowther/godmi v0.6.1/go.mod h1:O/JaTV/eBIggbtmYJ4Ld+Jqpn35C2OejkC5f0wNGt2o=
+github.com/digitalocean/go-smbios v0.0.0-20180907143718-390a4f403a8e h1:vUmf0yezR0y7jJ5pceLHthLaYf4bA5T14B6q39S4q2Q=
+github.com/digitalocean/go-smbios v0.0.0-20180907143718-390a4f403a8e/go.mod h1:YTIHhz/QFSYnu/EhlF2SpU2Uk+32abacUYA5ZPljz1A=
 github.com/ghodss/yaml v0.0.0-20190212211648-25d852aebe32 h1:KAaAf12i9OYioQMQPO27N984uGevaVYe1Lb2Vq/QLQ4=
 github.com/ghodss/yaml v0.0.0-20190212211648-25d852aebe32/go.mod h1:GIjDIg/heH5DOkXY3YJ/wNhfHsQHoXGjl8G8amsYQ1I=
+github.com/google/go-cmp v0.4.0 h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=
+github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/rackn/gohai v0.0.0-20190619164647-92918a701117 h1:GjnCXsgE6D7gyD1XFALuxS38GM6go7KdWrDA0QbNO3U=
 github.com/rackn/gohai v0.0.0-20190619164647-92918a701117/go.mod h1:1NhfVxJ6qD4S5ondz2CobWFiYlODF8ex4pNgQrKYCxc=
+github.com/rackn/gohai v0.6.1 h1:Szqy3kaX4Tpw71mYhm5Ns7DKzMN7Z08GhLYXlUFaKyk=
+github.com/rackn/gohai v0.6.1/go.mod h1:L14W5Y4U9zycW/zJlbg75nVbrO6qWj80FWHjiCgxnag=
+golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=
+golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=

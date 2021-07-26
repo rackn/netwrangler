@@ -7,7 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
-
+	
 	yaml "github.com/ghodss/yaml"
 	gnet "github.com/rackn/gohai/plugins/net"
 )
@@ -110,6 +110,18 @@ type RoutePolicy struct {
 	TOS int `json:"type-of-service,omitempty"`
 }
 
+// Overrides are the overrides that can be set for DHCP4 and DHCP6
+type Overrides struct {
+	UseDNS          bool    `json:"use-dns,omitempty"`
+	UseNTP          bool    `json:"use-ntp,omitempty"`
+	SendHostname    bool    `json:"send-hostname,omitempty"`
+	UseMTU          bool    `json:"use-mtu,omitempty"`
+	Hostname        string  `json:"hostname,omitempty"`
+	UseRoutes       bool    `json:"use-routes,omitempty"`
+	RouteMetric     int     `json:"route-metric,omitempty"`
+	UseDomains      string  `json:"use-domains,omitempty"`
+}
+
 // IPString translates a RoutePolicy into the appropriate ip command
 // arguments to add said routing policy to a running system.
 func (r RoutePolicy) IPString() string {
@@ -147,7 +159,7 @@ func (r *RoutePolicy) validate() error {
 // NSInfo defines basic information for local name service
 // configuration.
 type NSInfo struct {
-	// Searsh is a list of domains that should be searched when
+	// Search is a list of domains that should be searched when
 	// resolving domains.
 	Search []string `json:"search,omitempty"`
 	// Addresses is a list of DNS name server addresses.
@@ -170,9 +182,17 @@ type Network struct {
 	// Dhcp4 specifies whether an IPv4 address should be solicited for
 	// this interface via DHCP.
 	Dhcp4 bool `json:"dhcp4,omitempty"`
+	// Dhcp4Overrides are the overrides for the interface such as should
+	// it use DNS, and NTP. It also is used to set hostname and MTU size
+	// and other route settings
+	Dhcp4Overrides []Overrides `json:"dhcp4-overrides,omitempty"`
 	// Dhcp6 specifies whether an IPv6 address should be solicited for
 	// this interface via DHCP6
 	Dhcp6 bool `json:"dhcp6,omitempty"`
+	// Dhcp6Overrides are the overrides for the interface such as should
+	// it use DNS, and NTP. It also is used to set hostname and MTU size
+	// and other route settings
+	Dhcp6Overrides []Overrides `json:"dhcp6-overrides,omitempty"`
 	// DhcpIdentifier specifies what should be used as a unique
 	// identifier for this interface when performing DHCP operations.
 	// If unset, a generated Client ID will be used.  THe only other
