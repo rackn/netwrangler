@@ -135,7 +135,7 @@ func override() util.Validator {
 		"route-metric": util.C(util.VI(68,1500)),
 		"use-domains": util.D(true, util.VS("true", "false", "route")),
 	}
-	return func(e *util.Err, k string, v interface{}) (interface, bool) {
+	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := &util.Overrides{}
 		resOK := util.ValidateAndMarshal(e, v, checks, res)
 		return res, resOK
