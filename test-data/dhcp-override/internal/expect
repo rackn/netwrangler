@@ -7,7 +7,15 @@ Interfaces:
     network:
       accept-ra: true
       dhcp4: true
-      dhcp4-overrides: {}
+      dhcp4-overrides:
+        hostname: test
+        route-metric: 100
+        send-hostname: true
+        use-dns: true
+        use-domains: "true"
+        use-mtu: true
+        use-ntp: true
+        use-routes: true
       dhcp6-overrides: {}
     type: physical
 Roots:

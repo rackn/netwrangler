@@ -4,6 +4,8 @@ network:
       accept-ra: true
       addresses:
       - 192.168.254.2/24
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
       interfaces:
       - enp5s0
       - enp6s0
@@ -14,6 +16,8 @@ network:
       accept-ra: true
       addresses:
       - 192.168.93.2/24
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
       interfaces:
       - enp2s0
       - enp3s0
@@ -24,6 +28,8 @@ network:
       accept-ra: true
       addresses:
       - 192.168.1.252/24
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
       gateway4: 192.168.1.1
       interfaces:
       - enp1s0

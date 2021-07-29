@@ -22,6 +22,8 @@ Interfaces:
       accept-ra: true
       addresses:
       - 192.168.254.2/24
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
     parameters:
       mii-monitor-interval: 1
       mode: balance-rr
@@ -36,6 +38,8 @@ Interfaces:
       accept-ra: true
       addresses:
       - 192.168.93.2/24
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
     parameters:
       mii-monitor-interval: 1
       mode: 802.3ad
@@ -50,6 +54,8 @@ Interfaces:
       accept-ra: true
       addresses:
       - 192.168.1.252/24
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
       gateway4: 192.168.1.1
       nameservers:
         addresses:

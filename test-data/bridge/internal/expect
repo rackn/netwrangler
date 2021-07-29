@@ -10,6 +10,8 @@ Interfaces:
     network:
       accept-ra: true
       dhcp4: true
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
     type: bridge
   enp3s0:
     hwaddr: "52:54:01:23:00:03"

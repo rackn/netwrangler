@@ -3,5 +3,7 @@ network:
     eno1:
       accept-ra: true
       dhcp4: true
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
   renderer: networkd
   version: 2

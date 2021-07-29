@@ -8,6 +8,8 @@ Interfaces:
       accept-ra: true
       dhcp-identifier: mac
       dhcp4: true
+      dhcp4-overrides: {}
+      dhcp6-overrides: {}
     type: physical
 Roots:
 - enp3s0
