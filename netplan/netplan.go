@@ -132,7 +132,7 @@ func override() util.Validator {
 		"use-mtu": util.D(true, util.VB()),
 		"hostname": util.C(util.VS()),
 		"use-routes": util.D(true, util.VB()),
-		"route-metric": util.C(util.VI(68,1500)),
+		"route-metric": util.C(util.VI(0, math.MaxUint32)),
 		"use-domains": util.D(true, util.VS("true", "false", "route")),
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
