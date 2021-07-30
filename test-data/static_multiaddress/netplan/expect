@@ -5,8 +5,6 @@ network:
       addresses:
       - 10.100.1.38/24
       - 10.100.1.39/24
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
       gateway4: 10.100.1.1
   renderer: networkd
   version: 2

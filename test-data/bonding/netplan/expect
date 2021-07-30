@@ -3,8 +3,6 @@ network:
     bond0:
       accept-ra: true
       dhcp4: true
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
       interfaces:
       - enp3s0
       - enp4s0

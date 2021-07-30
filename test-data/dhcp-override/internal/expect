@@ -16,7 +16,6 @@ Interfaces:
         use-mtu: true
         use-ntp: true
         use-routes: true
-      dhcp6-overrides: {}
     type: physical
 Roots:
 - enp3s0

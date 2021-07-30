@@ -11,8 +11,6 @@ Interfaces:
       accept-ra: true
       addresses:
       - 10.3.0.5/23
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
       gateway4: 10.3.0.1
       nameservers:
         addresses:
@@ -30,8 +28,6 @@ Interfaces:
       accept-ra: true
       addresses:
       - 10.3.98.5/24
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
       nameservers:
         addresses:
         - 127.0.0.1
@@ -50,8 +46,6 @@ Interfaces:
       accept-ra: true
       addresses:
       - 10.3.99.5/24
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
     parameters:
       id: 15
     type: vlan

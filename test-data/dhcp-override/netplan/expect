@@ -12,6 +12,5 @@ network:
         use-mtu: true
         use-ntp: true
         use-routes: true
-      dhcp6-overrides: {}
   renderer: networkd
   version: 2

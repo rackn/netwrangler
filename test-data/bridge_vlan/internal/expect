@@ -13,8 +13,6 @@ Interfaces:
       accept-ra: true
       addresses:
       - 10.3.99.25/24
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
     type: bridge
   enp0s25:
     hwaddr: "52:54:01:23:00:00"
@@ -23,8 +21,6 @@ Interfaces:
     network:
       accept-ra: true
       dhcp4: true
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
     type: physical
   vlan15:
     interfaces:

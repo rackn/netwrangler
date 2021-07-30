@@ -9,8 +9,6 @@ Interfaces:
       addresses:
       - 10.0.0.10/24
       - 11.0.0.11/24
-      dhcp4-overrides: {}
-      dhcp6-overrides: {}
       nameservers:
         addresses:
         - 8.8.8.8
