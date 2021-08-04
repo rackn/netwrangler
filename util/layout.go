@@ -7,7 +7,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	
 	yaml "github.com/ghodss/yaml"
 	gnet "github.com/rackn/gohai/plugins/net"
 )
@@ -113,22 +112,22 @@ type RoutePolicy struct {
 // Overrides are the overrides that can be set for DHCP4 and DHCP6
 type Overrides struct {
 	// UseDNS default is true, DNS is set from DHCP provided server.
-	UseDNS          bool    `json:"use-dns,omitempty"`
+	UseDNS          bool    `json:"use-dns"`
 	// UseNTP default is true, when set uses NTP provided by DHCP server.
-	UseNTP          bool    `json:"use-ntp,omitempty"`
+	UseNTP          bool    `json:"use-ntp"`
 	// SendHostname default is true, when set system will send hostname to DHCP server.
-	SendHostname    bool    `json:"send-hostname,omitempty"`
+	SendHostname    bool    `json:"send-hostname"`
 	// UseMTU default is true, when set the MTU received from the DHCP server will be used.
-	UseMTU          bool    `json:"use-mtu,omitempty"`
+	UseMTU          bool    `json:"use-mtu"`
 	// Hostname, set the value of the host name that is sent to the DHCP server.
-	Hostname        string  `json:"hostname,omitempty"`
+	Hostname        string  `json:"hostname"`
 	// UseRoutes default is true, when set uses routes defined by DHCP server.
-	UseRoutes       bool    `json:"use-routes,omitempty"`
+	UseRoutes       bool    `json:"use-routes"`
 	// RouteMetric set default vale of route lower number is higher priority.
-	RouteMetric     int     `json:"route-metric,omitempty"`
+	RouteMetric     int     `json:"route-metric"`
 	// UseDomains, Default is true, either takes a Bool or Route when set
 	// it uses the search domains from the dhcp server
-	UseDomains      string  `json:"use-domains,omitempty"`
+	UseDomains      string  `json:"use-domains"`
 }
 
 // IPString translates a RoutePolicy into the appropriate ip command

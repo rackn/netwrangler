@@ -6,10 +6,10 @@ network:
       dhcp4: true
       dhcp4-overrides:
         use-dns: true
-        use-ntp: true
-        send-hostname: true
-        use-mtu: true
+        use-ntp: false
+        send-hostname: false
+        use-mtu: false
         hostname: test
-        use-routes: true
-        route-metric: 100
-        use-domains: "true"
+        use-routes: false
+        route-metric: 150
+        use-domains: "route"
