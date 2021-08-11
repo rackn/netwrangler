@@ -291,7 +291,7 @@ func writeRoutePolicy(r util.RoutePolicy, e *util.Err, nw io.Writer) {
 	}
 }
 
-func writeDHCPv4(o util.Overrides, e *util.Err, nw io.Writer) {
+func writeDHCPv4(o *util.Overrides, e *util.Err, nw io.Writer) {
 	fmt.Fprintf(nw, "\n[DHCPv4]\n")
 	if o.SendHostname != false{
 		fmt.Fprintf(nw, "SendHostname=%t\n", o.SendHostname)
@@ -385,9 +385,6 @@ func writeNetwork(n *util.Network, e *util.Err, nw io.Writer) {
 	}
 	for _, r := range n.RoutingPolicy {
 		writeRoutePolicy(r, e, nw)
-	}
-	for _, o := range n.Dhcp4Overrides {
-		writeDHCPv4(o, e, nw)
 	}
 }
 

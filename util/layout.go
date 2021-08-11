@@ -193,14 +193,14 @@ type Network struct {
 	// Dhcp4Overrides are the overrides for the interface such as should
 	// it use DNS, and NTP. It also is used to set hostname and MTU size
 	// and other route settings
-	Dhcp4Overrides []*Overrides `json:"dhcp4-overrides,omitempty"`
+	Dhcp4Overrides *Overrides `json:"dhcp4-overrides,omitempty"`
 	// Dhcp6 specifies whether an IPv6 address should be solicited for
 	// this interface via DHCP6
 	Dhcp6 bool `json:"dhcp6,omitempty"`
 	// Dhcp6Overrides are the overrides for the interface such as should
 	// it use DNS, and NTP. It also is used to set hostname and MTU size
 	// and other route settings
-	Dhcp6Overrides []*Overrides `json:"dhcp6-overrides,omitempty"`
+	Dhcp6Overrides *Overrides `json:"dhcp6-overrides,omitempty"`
 	// DhcpIdentifier specifies what should be used as a unique
 	// identifier for this interface when performing DHCP operations.
 	// If unset, a generated Client ID will be used.  THe only other
