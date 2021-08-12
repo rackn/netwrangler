@@ -292,28 +292,7 @@ func writeRoutePolicy(r util.RoutePolicy, e *util.Err, nw io.Writer) {
 }
 
 func writeDHCPv4(o *util.Overrides, e *util.Err, nw io.Writer) {
-	fmt.Fprintf(nw, "\n[DHCPv4]\n")
-	if o.SendHostname != false{
-		fmt.Fprintf(nw, "SendHostname=%t\n", o.SendHostname)
-	}
-	if o.Hostname != "" {
-		fmt.Fprintf(nw, "Hostname=%s\n", o.Hostname)
-	}
-	if o.UseDNS != false {
-		fmt.Fprintf(nw, "UseDNS=%t\n", o.UseDNS)
-	}
-	if o.UseNTP != false {
-		fmt.Fprintf(nw, "UseNTP=%t\n", o.UseNTP)
-	}
-	if o.UseMTU != false {
-		fmt.Fprintf(nw, "UseMTU=%t\n", o.UseMTU)
-	}
-	if o.UseDomains != "" {
-		fmt.Fprintf(nw, "UseDomains=%s\n", o.UseDomains)
-	}
-	if o.UseRoutes != false {
-		fmt.Fprintf(nw, "UseRoutes=%t\n", o.UseRoutes)
-	}
+
 }
 
 func writeNetwork(n *util.Network, e *util.Err, nw io.Writer) {
@@ -385,6 +364,24 @@ func writeNetwork(n *util.Network, e *util.Err, nw io.Writer) {
 	}
 	for _, r := range n.RoutingPolicy {
 		writeRoutePolicy(r, e, nw)
+	}
+	if n.Dhcp4Overrides != nil {
+		fmt.Fprintf(nw, "\n[DHCPv4]\n")
+		fmt.Fprintf(nw, "SendHostname=%t\n", n.Dhcp4Overrides.SendHostname)
+		fmt.Fprintf(nw, "Hostname=%s\n", n.Dhcp4Overrides.Hostname)
+		fmt.Fprintf(nw, "UseDNS=%t\n", n.Dhcp4Overrides.UseDNS)
+		fmt.Fprintf(nw, "UseNTP=%t\n", n.Dhcp4Overrides.UseNTP)
+		fmt.Fprintf(nw, "UseMTU=%t\n", n.Dhcp4Overrides.UseMTU)
+		fmt.Fprintf(nw, "UseRoutes=%t\n", n.Dhcp4Overrides.UseRoutes)
+	}
+	if n.Dhcp6Overrides != nil {
+		fmt.Fprintf(nw, "\n[DHCPv4]\n")
+		fmt.Fprintf(nw, "SendHostname=%t\n", n.Dhcp6Overrides.SendHostname)
+		fmt.Fprintf(nw, "Hostname=%s\n", n.Dhcp6Overrides.Hostname)
+		fmt.Fprintf(nw, "UseDNS=%t\n", n.Dhcp6Overrides.UseDNS)
+		fmt.Fprintf(nw, "UseNTP=%t\n", n.Dhcp6Overrides.UseNTP)
+		fmt.Fprintf(nw, "UseMTU=%t\n", n.Dhcp6Overrides.UseMTU)
+		fmt.Fprintf(nw, "UseRoutes=%t\n", n.Dhcp6Overrides.UseRoutes)
 	}
 }
 
