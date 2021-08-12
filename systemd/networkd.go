@@ -291,10 +291,6 @@ func writeRoutePolicy(r util.RoutePolicy, e *util.Err, nw io.Writer) {
 	}
 }
 
-func writeDHCPv4(o *util.Overrides, e *util.Err, nw io.Writer) {
-
-}
-
 func writeNetwork(n *util.Network, e *util.Err, nw io.Writer) {
 	if n == nil {
 		return
