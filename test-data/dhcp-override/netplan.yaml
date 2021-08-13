@@ -1,0 +1,15 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp3s0:
+      dhcp4: true
+      dhcp4-overrides:
+        use-dns: true
+        use-ntp: false
+        send-hostname: false
+        use-mtu: false
+        hostname: test
+        use-routes: false
+        route-metric: 150
+        use-domains: "route"

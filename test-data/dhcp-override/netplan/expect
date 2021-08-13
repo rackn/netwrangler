@@ -1,0 +1,16 @@
+network:
+  ethernets:
+    enp3s0:
+      accept-ra: true
+      dhcp4: true
+      dhcp4-overrides:
+        hostname: test
+        route-metric: 150
+        send-hostname: false
+        use-dns: true
+        use-domains: route
+        use-mtu: false
+        use-ntp: false
+        use-routes: false
+  renderer: networkd
+  version: 2

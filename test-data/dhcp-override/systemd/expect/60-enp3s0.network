@@ -1,0 +1,14 @@
+[Match]
+Name=enp3s0
+
+[Network]
+DHCP=ipv4
+IPv6AcceptRA=true
+
+[DHCPv4]
+SendHostname=false
+Hostname=test
+UseDNS=true
+UseNTP=false
+UseMTU=false
+UseRoutes=false

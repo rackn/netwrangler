@@ -2,14 +2,13 @@ package util
 
 import (
 	"fmt"
+	yaml "github.com/ghodss/yaml"
+	gnet "github.com/rackn/gohai/plugins/net"
 	"io/ioutil"
 	"log"
 	"os"
 	"sort"
 	"strings"
-
-	yaml "github.com/ghodss/yaml"
-	gnet "github.com/rackn/gohai/plugins/net"
 )
 
 // Route defines a static route to be used if setting up policy routes.
@@ -110,6 +109,27 @@ type RoutePolicy struct {
 	TOS int `json:"type-of-service,omitempty"`
 }
 
+// Overrides are the overrides that can be set for DHCP4 and DHCP6
+type Overrides struct {
+	// UseDNS default is true, DNS is set from DHCP provided server.
+	UseDNS          bool    `json:"use-dns"`
+	// UseNTP default is true, when set uses NTP provided by DHCP server.
+	UseNTP          bool    `json:"use-ntp"`
+	// SendHostname default is true, when set system will send hostname to DHCP server.
+	SendHostname    bool    `json:"send-hostname"`
+	// UseMTU default is true, when set the MTU received from the DHCP server will be used.
+	UseMTU          bool    `json:"use-mtu"`
+	// Hostname, set the value of the host name that is sent to the DHCP server.
+	Hostname        string  `json:"hostname"`
+	// UseRoutes default is true, when set uses routes defined by DHCP server.
+	UseRoutes       bool    `json:"use-routes"`
+	// RouteMetric set default vale of route lower number is higher priority.
+	RouteMetric     int     `json:"route-metric"`
+	// UseDomains, Default is true, either takes a Bool or Route when set
+	// it uses the search domains from the dhcp server
+	UseDomains      string  `json:"use-domains"`
+}
+
 // IPString translates a RoutePolicy into the appropriate ip command
 // arguments to add said routing policy to a running system.
 func (r RoutePolicy) IPString() string {
@@ -147,7 +167,7 @@ func (r *RoutePolicy) validate() error {
 // NSInfo defines basic information for local name service
 // configuration.
 type NSInfo struct {
-	// Searsh is a list of domains that should be searched when
+	// Search is a list of domains that should be searched when
 	// resolving domains.
 	Search []string `json:"search,omitempty"`
 	// Addresses is a list of DNS name server addresses.
@@ -170,9 +190,17 @@ type Network struct {
 	// Dhcp4 specifies whether an IPv4 address should be solicited for
 	// this interface via DHCP.
 	Dhcp4 bool `json:"dhcp4,omitempty"`
+	// Dhcp4Overrides are the overrides for the interface such as should
+	// it use DNS, and NTP. It also is used to set hostname and MTU size
+	// and other route settings
+	Dhcp4Overrides *Overrides `json:"dhcp4-overrides,omitempty"`
 	// Dhcp6 specifies whether an IPv6 address should be solicited for
 	// this interface via DHCP6
 	Dhcp6 bool `json:"dhcp6,omitempty"`
+	// Dhcp6Overrides are the overrides for the interface such as should
+	// it use DNS, and NTP. It also is used to set hostname and MTU size
+	// and other route settings
+	Dhcp6Overrides *Overrides `json:"dhcp6-overrides,omitempty"`
 	// DhcpIdentifier specifies what should be used as a unique
 	// identifier for this interface when performing DHCP operations.
 	// If unset, a generated Client ID will be used.  THe only other

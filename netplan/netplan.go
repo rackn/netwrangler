@@ -105,7 +105,9 @@ func routepolicy() util.Validator {
 func network() util.Validator {
 	checks := map[string]*util.Check{
 		"dhcp4":           util.D(false, util.VB()),
+		"dhcp4-overrides": util.C(overrides()),
 		"dhcp6":           util.D(false, util.VB()),
+		"dhcp6-overrides": util.C(overrides()),
 		"dhcp-identifier": util.C(util.VS()),
 		"accept-ra":       util.D(true, util.VB()),
 		"addresses":       util.C(util.VIPS(true)),
@@ -117,6 +119,24 @@ func network() util.Validator {
 	}
 	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
 		res := &util.Network{}
+		resOK := util.ValidateAndMarshal(e, v, checks, res)
+		return res, resOK
+	}
+}
+
+func overrides() util.Validator {
+	checks := map[string]*util.Check{
+		"use-dns": util.D(true, util.VB()),
+		"use-ntp": util.D(true, util.VB()),
+		"send-hostname": util.D(true, util.VB()),
+		"use-mtu": util.D(true, util.VB()),
+		"hostname": util.C(util.VS()),
+		"use-routes": util.D(true, util.VB()),
+		"route-metric": util.C(util.VI(0, math.MaxUint32)),
+		"use-domains": util.D("true", util.VS("true", "false", "route")),
+	}
+	return func(e *util.Err, k string, v interface{}) (interface{}, bool) {
+		res := &util.Overrides{}
 		resOK := util.ValidateAndMarshal(e, v, checks, res)
 		return res, resOK
 	}
